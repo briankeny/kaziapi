@@ -1,4 +1,4 @@
-from datetime import timezone
+from django.utils import timezone
 from django.db import models
 from django.contrib.postgres.fields import ArrayField
 from users.models import User
@@ -6,9 +6,17 @@ from users.models import User
 class Job(models.Model):
     job_id = models.AutoField(primary_key=True)
     job_name = models.CharField(max_length=100, default=None ,unique=True,null=False)
-    job_skills =  ArrayField(models.CharField(max_length=255), default=None , null=False)
+    job_skills =  ArrayField(models.CharField(max_length=100), default=None , null=False)
 
-# Create your models here.
+    def __str__(self):
+     return self.job_name
+    
+    def save(self, *args, **kwargs):
+        # Convert job_name to lowercase before saving
+        self.job_name = self.job_name.lower()
+        super(Job, self).save(*args, **kwargs)
+
+
 class JobAdvert(models.Model):
     EMPLOYMENT_CHOICES = (
         ('full_time', 'Full-time'),
@@ -66,17 +74,19 @@ class SavedJobAdvert(models.Model):
     save_id = models.AutoField(primary_key=True)
     user = models.ForeignKey(User, on_delete=models.CASCADE, related_name='saved_jobs')
     savedjob = models.ForeignKey(JobAdvert, on_delete=models.CASCADE, related_name='saved_by')
-    date = models.DateTimeField(auto_now_add=True)
+    date_posted = models.DateTimeField(auto_now_add=True)
 
     def __str__(self):
-        return f"{self.user.email} saved {self.job.title}"
+        return f"{self.user.email} saved {self.savedjob.title}"
 
 class Review(models.Model):
     review_id = models.AutoField(primary_key=True)
-    reveiwer = models.ForeignKey(User, on_delete=models.CASCADE, related_name='reviewer')
-    User = models.ForeignKey(User, on_delete=models.CASCADE, related_name='user-post')
+    reveiwer = models.ForeignKey(User, on_delete=models.CASCADE, related_name='user_reviewer')
+    jobadvert = models.ForeignKey(JobAdvert, on_delete=models.CASCADE, related_name='user_post')
     rating = models.IntegerField()
     review_text = models.TextField(null=True, blank=True)
+    date_posted = models.DateTimeField(auto_now_add=True)
+
 
     def __str__(self):
-        return f"Review by {self.seeker.first_name} for {self.recruiter.first_name}"
+        return f"Review by {self.reveiwer.full_name} for {self.reveiwer.full_name}"

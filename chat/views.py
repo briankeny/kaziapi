@@ -55,6 +55,10 @@ class MessageDetail(generics.RetrieveUpdateDestroyAPIView):
     # Dissallow unsafe methods
     def put(self, request, *args, **kwargs):
          return Response({'message': 'Unsupported Request.'}, status=status.HTTP_405_METHOD_NOT_ALLOWED)
+    
+     # Dissallow unsafe methods
+    def patch(self, request, *args, **kwargs):
+         return Response({'message': 'Unsupported Request.'}, status=status.HTTP_405_METHOD_NOT_ALLOWED)
 
     def get_queryset(self):
         chat_id = self.kwargs['pk']

@@ -1,28 +1,29 @@
 from rest_framework import serializers
-from .models import Job, SavedJobAdvert,Review
+from .models import Job, SavedJobAdvert,Review,JobApplication,JobAdvert
 
 class JobSerializer(serializers.ModelSerializer):
     class Meta:
         model = Job
         fields = '__all__'
 
+
+class JobAdvertSerializer(serializers.ModelSerializer):
+    class Meta:
+        model = JobAdvert
+        fields = '__all__'
+
+
 class JobApplicationSerializer(serializers.ModelSerializer):
     class Meta:
-        model = Application
-        fields = ['id', 'job', 'applicant', 'resume', 'cover_letter', 'status']
-
-
-class JobSkillSerializer(serializers.ModelSerializer):
-    class Meta:
-        model = JobSkill
-        fields = ['id', 'job', 'skill_name']
+        model = JobApplication
+        fields = '__all__'
 
 class SavedJobSerializer(serializers.ModelSerializer):
     class Meta:
-        model = SavedJob
-        fields = ['id', 'job', 'user', 'saved_at']
+        model = SavedJobAdvert
+        fields = '__all__'
 
 class ReviewSerializer(serializers.ModelSerializer):
     class Meta:
         model = Review
-        fields = ['id', 'company', 'user', 'rating', 'review_text']
+        fields = '__all__'

@@ -10,7 +10,8 @@ import notifications.urls as notification_urls
 import users.urls as user_urls
 import chat.urls as chat_urls
 import jobs.urls as jobs_urls
-
+import recovery.urls as recov_urls
+import sms.urls as smurls
 
 # import reports.urls as repurls
 # from rest_framework_swagger.views import get_swagger_view
@@ -31,6 +32,8 @@ urlpatterns = [
     # path('', include(repurls)),
     path('', include(notification_urls)),
     path('', include(auth_urls)),
+    path('', include(recov_urls)),
+    path('', include(smurls)),
     path('', include(user_urls)),
     path('', include(jobs_urls)),
     path('', include(chat_urls)),

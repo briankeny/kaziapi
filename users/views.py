@@ -1,21 +1,20 @@
+import os
 from rest_framework import generics
 from rest_framework.renderers import JSONRenderer
 from rest_framework import status
-import os
 from rest_framework.pagination import LimitOffsetPagination
-from django.contrib.auth.decorators import permission_required
 from rest_framework.response import Response
-from .models import User
-from .serializers import UserSerializer
+from .models import User,UserSkill
+from .serializers import UserSerializer,UserSkillSerializer
 from rest_framework_simplejwt.authentication import  JWTAuthentication
 from rest_framework.parsers import MultiPartParser
-from rest_framework.permissions import IsAuthenticated,DjangoModelPermissions, IsAdminUser   
+from rest_framework.permissions import IsAuthenticated, AllowAny
 from django.db import IntegrityError
 from rest_framework.exceptions import UnsupportedMediaType
 from django.forms import ValidationError
 
 
-class UserListView(generics.ListAPIView):
+class UserProfileView(generics.RetrieveAPIView):
     authentication_classes = [JWTAuthentication]
     permission_classes = [IsAuthenticated]
     lookup_field = 'pk'
@@ -28,32 +27,52 @@ class UserListView(generics.ListAPIView):
         return User.objects.filter(email=user.email)
     
 class UserCreate(generics.CreateAPIView):
-    authentication_classes = [JWTAuthentication]
-    permission_classes = [IsAuthenticated]
+    permission_classes = [AllowAny]
     serializer_class = UserSerializer
-    lookup_field = 'pk'
-    parser_classes = (MultiPartParser,)
     renderer_classes = [JSONRenderer]
-    queryset = User.objects.all()
     pagination_class = None
    
     def create(self, request, *args, **kwargs):
         try:
-            user = self.request.user
-            if not (user.is_superuser or user.is_staff):
-                return Response({"detail": "You Are not Authorized to Perform This Operation"},
-                                status=status.HTTP_403_FORBIDDEN)
-            response = super().create(request, *args, **kwargs)
-            return response
+            # Copy request data
+            data = request.data.copy()
+
+            # Get Phone number from the request body 
+            phone = request.data.get('mobile_number',None)
+            otp = request.data.get('otp',None)
+            data.pop('mobile_verified')
+
+            if phone == None or otp == None:
+                return Response({'error':'Missing Credentials'},status=status.HTTP_400_BAD_REQUEST)
+            
+            #Serialize the data
+            serializer = self.get_serializer(data=data)
+            serializer.is_valid(raise_exception=True)
+    
+            # Check if a user has this phone number
+            try:
+                usr = User.objects.get(mobile_number = phone)
+                if usr:
+                    return Response({'error':'An Account with this number already exists'},
+                                    status=status.HTTP_400_BAD_REQUEST)
+            except User.DoesNotExist:
+                pass
+
+            # Check if user verified their phone number
+            try:
+                verified_number = PhoneVerificationToken.objects.get(mobile_number=phone)
+                if not verified_number.verified:
+                    return Response({'error':'Phone number verification is required'},status=status.HTTP_400_BAD_REQUEST)
+            except PhoneVerificationToken.DoesNotExist:
+                return Response({'error':'Phone number verification is required'},status=status.HTTP_400_BAD_REQUEST)
+            
+            # Proceed to create the user
+            serializer.validated_data['mobile_verified'] = True
+            self.perform_create(serializer)  
+            return Response({'message':'User account has been created'},status=status.HTTP_201_CREATED)
         except ValidationError as e: 
-            return Response({'error':'Submit All Required Fields'},status=status.HTTP_400_BAD_REQUEST) 
-        except ValueError as e:
-            return Response({"error": "Submit Correct Data"},status=status.HTTP_400_BAD_REQUEST)
-        except IntegrityError as e:
-            return Response({"error": "User With Matching Details Exists"},status=status.HTTP_400_BAD_REQUEST)
-        except UnsupportedMediaType as e:
-            return Response({"error": "This Media Type is Not Supported Use Form Data"},status=status.HTTP_415_UNSUPPORTED_MEDIA_TYPE)    
-      
+            return Response({'error':'Incorrect data or missing credentials'},status=status.HTTP_400_BAD_REQUEST) 
+
 class UserListView(generics.ListAPIView):
     authentication_classes = [JWTAuthentication]
     permission_classes = [IsAuthenticated]
@@ -97,8 +116,8 @@ class UserDetail(generics.RetrieveUpdateDestroyAPIView):
     def get_queryset(self):
         user = self.request.user
         queryset = User.objects.all() 
-        if not (user.is_superuser or user.groups.filter(name='UserAdmin').exists()):
-           queryset = queryset.filter(email = user.email) 
+        queryset = queryset.filter(user_id = user.user_id) 
+        
         return queryset
      
     def put(self, request, *args, **kwargs):
@@ -116,13 +135,12 @@ class UserDetail(generics.RetrieveUpdateDestroyAPIView):
             requestData = request.data.copy()
         
             # Check if it is the same person or an authorized party, then proceed to make changes
-            if not (instance.email == user.email or user.is_superuser or user.groups.filter(name='UserAdmin').exists()): 
+            if not (instance.email == user.email): 
                 return Response({"message": "You are not authorized to perform this operation"}, 
                                 status=status.HTTP_403_FORBIDDEN)
 
             # Prevent User From Changing Some Fields Unless Authorized
             nonChangeableFields = ['role','email','role']
-            changed_fields = []
 
             # User id not authorized to change non changeable fields so we remove them from request.data
             requestData = {key: value for key, value in requestData.items() if key not in nonChangeableFields}  
@@ -140,7 +158,7 @@ class UserDetail(generics.RetrieveUpdateDestroyAPIView):
                             pass
 
 
-            serializer = self.get_serializer(instance, data=request.data, partial=True)
+            serializer = self.get_serializer(instance, data=requestData, partial=True)
             serializer.is_valid(raise_exception=True)
             serializer.save()
 
@@ -168,4 +186,16 @@ class UserDetail(generics.RetrieveUpdateDestroyAPIView):
         instance.delete()
               
         return Response({}, status=status.HTTP_204_NO_CONTENT)
+    
 
+class UserSkillListCreate(generics.ListCreateAPIView):
+    authentication_classes = [JWTAuthentication]
+    permission_classes = [IsAuthenticated]
+    queryset = UserSkill.objects.all()
+    serializer_class = UserSkillSerializer
+
+class UserSkillDetail(generics.RetrieveUpdateDestroyAPIView):
+    authentication_classes = [JWTAuthentication]
+    permission_classes = [IsAuthenticated]
+    queryset = UserSkill.objects.all()
+    serializer_class = UserSkillSerializer

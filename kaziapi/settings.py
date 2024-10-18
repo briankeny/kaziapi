@@ -14,9 +14,13 @@ BASE_DIR = Path(__file__).resolve().parent.parent
 SECRET_KEY = os.getenv('DJANGO_SECRET',None)
 JWT_SECRET_KEY = os.getenv('JWT_SECRET_KEY')
 
+SMS_API_KEY = os.getenv('SMS_API_KEY')
+SMS_USERNAME = os.getenv('SMS_USERNAME')
+SMS_URL = os.getenv('SMS_URL')
+SMS_NUMBER = os.getenv('SMS_NUMBER')
 
 # SECURITY WARNING: don't run with debug turned on in production!
-DEBUG = not os.getenv('RENDER',False)
+DEBUG = True
 
 ALLOWED_HOSTS = ['*']
 
@@ -45,7 +49,7 @@ MEDIA_ROOT = os.path.join(BASE_DIR,'media')
 
 STATIC_URL = '/static/'
 STATIC_ROOT = os.path.join(BASE_DIR,'static')
-STATICFILES_DIRS = [os.path.join(BASE_DIR, 'staticfiles')]
+# STATICFILES_DIRS = [os.path.join(BASE_DIR, 'staticfiles')]
 
 
 # Application definition
@@ -66,20 +70,21 @@ INSTALLED_APPS = [
     'notifications.apps.NotificationsConfig',
     'chat.apps.ChatConfig',
     'jobs.apps.JobsConfig',
+    'sms.apps.SmsConfig',
+    'recovery.apps.RecoveryConfig',
     
     # Third Party Apps 
     'gunicorn',
-    'channels',
     'whitenoise',
     'rest_framework_simplejwt.token_blacklist',
     'rest_framework',
-    'rest_framework_simplejwt',
-    'rest_framework_swagger'
+    # 'rest_framework_swagger'
+    'rest_framework_simplejwt'
+  
 ]
 
 MIDDLEWARE = [
     'django.middleware.security.SecurityMiddleware',
-
     'whitenoise.middleware.WhiteNoiseMiddleware',
     'django.contrib.sessions.middleware.SessionMiddleware',
     'django.middleware.common.CommonMiddleware',
@@ -116,7 +121,7 @@ if  DEBUG:
     # Development Settings
     DATABASES = {
     'default':{
-    'ENGINE':os.getenv('DB_ENGINE'),
+    'ENGINE':'django.db.backends.postgresql',
     'NAME':os.getenv('DB_NAME'),
     'USER':os.getenv('DB_USER'),
     'PASSWORD':os.getenv('DB_PASSWORD'),
