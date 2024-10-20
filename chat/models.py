@@ -1,11 +1,16 @@
 from django.db import models
 from users.models import User
-
+from django.utils import timezone
 
 class Chat(models.Model):
     chat_id = models.AutoField(primary_key=True)
     participants = models.ManyToManyField(User, related_name='conversations')
     latest_message = models.CharField(max_length=250,blank=True,default='')
+    timestamp = models.DateTimeField(auto_now_add=True)
+
+    def save(self, *args, **kwargs):
+        self.timestamp = timezone.now()
+        super().save(*args, **kwargs)
 
     def __str__(self):
         return f'{self.chat_id}'

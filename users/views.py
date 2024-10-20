@@ -12,7 +12,8 @@ from rest_framework.permissions import IsAuthenticated, AllowAny
 from django.db import IntegrityError
 from rest_framework.exceptions import UnsupportedMediaType
 from django.forms import ValidationError
-
+from sms.models import OtpSmsToken
+from django.contrib.auth.hashers import check_password
 
 class UserProfileView(generics.RetrieveAPIView):
     authentication_classes = [JWTAuthentication]
@@ -33,16 +34,15 @@ class UserCreate(generics.CreateAPIView):
     pagination_class = None
    
     def create(self, request, *args, **kwargs):
-        try:
             # Copy request data
             data = request.data.copy()
 
             # Get Phone number from the request body 
             phone = request.data.get('mobile_number',None)
             otp = request.data.get('otp',None)
-            data.pop('mobile_verified')
-
-            if phone == None or otp == None:
+            user_name = request.data.get('username',None)
+    
+            if phone == None or otp == None or user_name == None:
                 return Response({'error':'Missing Credentials'},status=status.HTTP_400_BAD_REQUEST)
             
             #Serialize the data
@@ -60,19 +60,25 @@ class UserCreate(generics.CreateAPIView):
 
             # Check if user verified their phone number
             try:
-                verified_number = PhoneVerificationToken.objects.get(mobile_number=phone)
-                if not verified_number.verified:
+                verified_number = OtpSmsToken.objects.get(mobile_number=phone)
+                if verified_number.verified:
+                    otp = str(otp)
+                    is_code_valid = check_password(otp,verified_number.otp)
+                    if not is_code_valid:
+                        return Response({'error':'Phone number verification is required'},status=status.HTTP_400_BAD_REQUEST)
+                    pass
+                else:
                     return Response({'error':'Phone number verification is required'},status=status.HTTP_400_BAD_REQUEST)
-            except PhoneVerificationToken.DoesNotExist:
+                                
+            except OtpSmsToken.DoesNotExist:
                 return Response({'error':'Phone number verification is required'},status=status.HTTP_400_BAD_REQUEST)
+            
             
             # Proceed to create the user
             serializer.validated_data['mobile_verified'] = True
             self.perform_create(serializer)  
-            return Response({'message':'User account has been created'},status=status.HTTP_201_CREATED)
-        except ValidationError as e: 
-            return Response({'error':'Incorrect data or missing credentials'},status=status.HTTP_400_BAD_REQUEST) 
-
+            return Response({'message':'Your account has been created successfully!'},status=status.HTTP_201_CREATED)
+     
 class UserListView(generics.ListAPIView):
     authentication_classes = [JWTAuthentication]
     permission_classes = [IsAuthenticated]

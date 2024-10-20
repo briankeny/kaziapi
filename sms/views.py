@@ -31,10 +31,12 @@ class OtpSmsCreateView(generics.CreateAPIView):
             code = round((random.random()*1000000))
             return code
 
-        token = codeGen()
+        tkn = codeGen()
+        tkn_str =str(tkn)
+        token= make_password(tkn_str)
 
         # send the code
-        message = f'Dear Customer your OTP is {token}. Use this code to verify your account with Kazi Mtaani'
+        message = f'Dear Customer your OTP is {tkn}. Use this code to verify your account with Kazi Mtaani'
         convo = SMS( recipients=[phone], message = message)
        
         # Check if the User has tried recently
@@ -49,7 +51,7 @@ class OtpSmsCreateView(generics.CreateAPIView):
                 return Response({'error':'You have exceeded maximum otp requests please try again later'},
                                  status=status.HTTP_429_TOO_MANY_REQUESTS)
              else:
-                existing_token.otp = make_password(token)
+                existing_token.otp = token
                 existing_token.max_otp_tries = existing_token.max_otp_tries-1
                 existing_token.save()
                 resp = convo.send()
@@ -109,7 +111,7 @@ class VerifyOTPView(generics.UpdateAPIView):
         
         try:
             item  = OtpSmsToken.objects.get(mobile_number=phone)
-            otp = int(otp)
+            otp = str(otp)
             is_code_valid = check_password(otp,item.otp)
             
             if not is_code_valid:

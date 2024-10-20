@@ -9,7 +9,7 @@ class User(AbstractUser, PermissionsMixin):
     first_name=None
     last_name = None
     user_id = models.AutoField(primary_key=True)
-    username= models.CharField(max_length=30, default=None, null=False,unique=True)
+    username= models.CharField(max_length=30, default=None,null=False,unique=True)
     full_name = models.CharField(max_length=100, default=None, null=False,blank=True)
     bio = models.CharField(max_length=300, default="Hi there I'm on Kazi Mtaani",null=True,blank=True)
     email = models.CharField(max_length=100, default=None, null=True,unique=True)
