@@ -17,11 +17,12 @@ class Job(models.Model):
         super(Job, self).save(*args, **kwargs)
 
 
-class JobAdvert(models.Model):
+class JobPost(models.Model):
     EMPLOYMENT_CHOICES = (
         ('full_time', 'Full-time'),
         ('part_time', 'Part-time'),
         ('contract', 'Contract'),
+        ('one_time', 'One-time'),
     )
     
     EXPERIENCE_CHOICES = (
@@ -35,7 +36,8 @@ class JobAdvert(models.Model):
         ('closed','Closed')
     )
 
-    advert_id = models.AutoField(primary_key=True)
+    post_id = models.AutoField(primary_key=True)
+    category = models.ForeignKey(Job,on_delete=models.SET_DEFAULT,default=None,blank=True,null=True)
     title = models.CharField(max_length=255,null=False,default=None)
     description = models.TextField()
     location = models.CharField(max_length=255)
@@ -58,22 +60,24 @@ class JobAdvert(models.Model):
 class JobApplication(models.Model):
     STATUS_CHOICES = (
         ('applied','applied'),
-        ('reviewed')
+        ('reviewed','reviewed'),
+        ('accepted','accepted'),
+        ('declined','accepted')
     )
 
-    jobadvert = models.ForeignKey(JobAdvert, on_delete=models.CASCADE, related_name='applications')
+    jobpost = models.ForeignKey(JobPost, on_delete=models.CASCADE, related_name='applications')
     applicant = models.ForeignKey(User, on_delete=models.CASCADE, related_name='applications')
     score  = models.PositiveIntegerField(default=0,null=False)
     status = models.CharField(max_length=20, default='applied')
     application_date = models.DateTimeField(auto_now_add=True)
     
     def __str__(self):
-        return f"{self.applicant.email} applied to {self.job.title}"
+        return f"{self.applicant.full_name} applied to {self.jobpost.title}"
 
-class SavedJobAdvert(models.Model):
+class SavedJobPost(models.Model):
     save_id = models.AutoField(primary_key=True)
-    user = models.ForeignKey(User, on_delete=models.CASCADE, related_name='saved_jobs')
-    savedjob = models.ForeignKey(JobAdvert, on_delete=models.CASCADE, related_name='saved_by')
+    user = models.ForeignKey(User, on_delete=models.CASCADE, related_name='saved_by')
+    savedjob = models.ForeignKey(JobPost, on_delete=models.CASCADE, related_name='saved_job')
     date_posted = models.DateTimeField(auto_now_add=True)
 
     def __str__(self):
@@ -82,8 +86,8 @@ class SavedJobAdvert(models.Model):
 class Review(models.Model):
     review_id = models.AutoField(primary_key=True)
     reveiwer = models.ForeignKey(User, on_delete=models.CASCADE, related_name='user_reviewer')
-    jobadvert = models.ForeignKey(JobAdvert, on_delete=models.CASCADE, related_name='user_post')
-    rating = models.IntegerField()
+    jobpost = models.ForeignKey(JobPost, on_delete=models.CASCADE, related_name='user_post')
+    rating = models.PositiveIntegerField(default=0,null=False,)
     review_text = models.TextField(null=True, blank=True)
     date_posted = models.DateTimeField(auto_now_add=True)
 

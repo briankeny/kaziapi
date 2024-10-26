@@ -10,6 +10,9 @@ load_dotenv()
 # CONSTRUCT ABS PATH TO BASE DIR
 BASE_DIR = Path(__file__).resolve().parent.parent
 
+# API DOMAIN
+API_DOMAIN=os.getenv('API_DOMAIN')
+
 # SECURITY WARNING: keep the secret key used in production secret!
 SECRET_KEY = os.getenv('DJANGO_SECRET',None)
 JWT_SECRET_KEY = os.getenv('JWT_SECRET_KEY')
@@ -36,7 +39,7 @@ EMAIL_PORT =  os.environ.get('EMAIL_PORT')
 EMAIL_USE_TLS = True
 EMAIL_HOST_USER =  os.environ.get('EMAIL_HOST_USER')
 EMAIL_HOST_PASSWORD = os.environ.get('EMAIL_HOST_PASSWORD')
-
+DEFAULT_FROM_EMAIL = os.environ.get('DEFAULT_FROM_EMAIL')
 
 AUTH_USER_MODEL = 'users.User'
 
@@ -49,8 +52,7 @@ MEDIA_ROOT = os.path.join(BASE_DIR,'media')
 
 STATIC_URL = '/static/'
 STATIC_ROOT = os.path.join(BASE_DIR,'static')
-# STATICFILES_DIRS = [os.path.join(BASE_DIR, 'staticfiles')]
-
+STATICFILES_DIRS = [os.path.join(BASE_DIR, 'staticfiles')]
 
 # Application definition
 # Application definition
@@ -65,6 +67,7 @@ INSTALLED_APPS = [
     'django.contrib.gis',
    
     # Project Apps
+    'kaziweb.apps.KaziwebConfig',
     'users.apps.UsersConfig',
     'authentication.apps.AuthenticationConfig',
     'notifications.apps.NotificationsConfig',
@@ -193,16 +196,16 @@ REST_FRAMEWORK = {
 
 
 SIMPLE_JWT = {
-    "ACCESS_TOKEN_LIFETIME": timedelta(minutes=600),
-    "REFRESH_TOKEN_LIFETIME": timedelta(days=1),
+    "ACCESS_TOKEN_LIFETIME": timedelta(minutes=6000),
+    "REFRESH_TOKEN_LIFETIME": timedelta(days=30),
     "ROTATE_REFRESH_TOKENS": False,
     "BLACKLIST_AFTER_ROTATION": False,
     "UPDATE_LAST_LOGIN": True,
 
     "AUTH_HEADER_TYPES": ("Bearer",),
     "AUTH_HEADER_NAME": "HTTP_AUTHORIZATION",
-    "USER_ID_FIELD": "email",
-    "USER_ID_CLAIM": "email",
+    "USER_ID_FIELD": "mobile_number",
+    "USER_ID_CLAIM": "mobile_number",
     "USER_AUTHENTICATION_RULE": "rest_framework_simplejwt.authentication.default_user_authentication_rule",
 
     "AUTH_TOKEN_CLASSES": ("rest_framework_simplejwt.tokens.AccessToken",),

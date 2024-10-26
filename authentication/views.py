@@ -21,9 +21,7 @@ class CustomObtainAuthLogin(TokenObtainPairView):
         except User.DoesNotExist:
             return Response({'error':'User matching the given credentials does not exist'},
                             status=status.HTTP_404_NOT_FOUND)
-        except Exception as e:
-             return Response({'error':'Invalid Credentials'},status=status.HTTP_400_BAD_REQUEST)
-
+        
         data = self.get_tokens_for_user(user)
         return Response(data,status=status.HTTP_201_CREATED)
     

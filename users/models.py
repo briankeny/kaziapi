@@ -6,6 +6,16 @@ from phonenumber_field.modelfields import PhoneNumberField
 
 class User(AbstractUser, PermissionsMixin):
     accounts = (('recruiter', 'recruiter'),('jobseeker', 'jobseeker'))
+    BADGES = (
+        # Reserved for companies and AI 
+        ('tier_one','tier_one'), 
+        # Reserved for verified recruiters
+        ('tier_two','tier_two'),
+        # Reserved for verified users
+        ('tier_three','tier_three'),
+        (None,None),
+        )
+
     first_name=None
     last_name = None
     user_id = models.AutoField(primary_key=True)
@@ -24,11 +34,12 @@ class User(AbstractUser, PermissionsMixin):
     mobile_verified = models.BooleanField(default=False,null=True)
     password = models.CharField(max_length=100, null=False,default=None)
     address = models.CharField(max_length=200, default="Eldoret", null=True)
+    verification_badge = models.CharField(max_length=100, null=True,default=None,choices=BADGES)
     device_token = models.CharField(max_length=100,default=None, null=True,blank = True)
     date_updated = models.DateTimeField(default=timezone.now)
    
     def __str__(self):
-        return f"{self.user_id} - {self.first_name} {self.last_name}"   
+        return f"{self.user_id} - {self.full_name}"   
 
     objects = UserManager()
 
@@ -37,10 +48,11 @@ class User(AbstractUser, PermissionsMixin):
         super().save(*args, **kwargs)
 
    
-    REQUIRED_FIELDS = ['first_name','last_name','email','account_type']
+    USERNAME_FIELD = 'mobile_number'
+    REQUIRED_FIELDS = ['full_name','account_type']
 
     def __str__(self):
-        return f'{self.last_name}-{self.first_name}'
+        return f'{self.last_name}-{self.full_name}'
     
 
 

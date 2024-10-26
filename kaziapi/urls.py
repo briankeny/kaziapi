@@ -5,6 +5,7 @@ from rest_framework import permissions
 from django.conf import settings
 
 # Apps urls
+import kaziweb.urls as kazi_urls
 import authentication.urls as auth_urls
 import notifications.urls as notification_urls
 import users.urls as user_urls
@@ -29,7 +30,7 @@ import sms.urls as smurls
 # )
 
 urlpatterns = [
-    # path('', include(repurls)),
+    path('', include(kazi_urls)),
     path('', include(notification_urls)),
     path('', include(auth_urls)),
     path('', include(recov_urls)),

@@ -31,9 +31,8 @@ class NotificationListView(generics.ListAPIView):
         if search_term != 'None' and search != 'None':
             try:
                 field = f'{search_term}__icontains'
-                # Use filter() for case-insensitive search using icontains
+                # UsING filter() for case-insensitive search using icontains
                 queryset = queryset.filter(**{field: search})
-                # Return the first 60 notifications
             except Exception as e:
                     queryset = []
         return queryset

@@ -1,0 +1,31 @@
+<!DOCTYPE html>
+<html>
+    <head>
+        {% load static%}
+        <title>
+            Email Password Reset Link
+        </title>
+    </head>
+<body>
+    <section class="reset-section">
+            <p class="greeting">
+                Hi {{ full_name }},
+            </p>
+            <p>
+                It looks like you requested a password reset. Click the link below to reset your password:
+            </p>
+            
+            <button  class="button-success">
+                <a class="reset-link" href="{{ reset_link }}">Reset Password</a>
+            </button>
+
+            <p>
+                If you didn't request this, you can safely ignore this email.
+            </p>
+            <p>
+                Best regards,<br>KaziMtaani Team
+            </p>
+        
+    </section>
+</body>
+</html>

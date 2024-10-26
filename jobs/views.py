@@ -2,7 +2,7 @@ from django.shortcuts import render
 from rest_framework import generics,permissions
 from rest_framework_simplejwt.authentication import  JWTAuthentication
 from rest_framework.pagination import LimitOffsetPagination
-from .models import (Job,JobApplication,JobAdvert,SavedJobAdvert,Review)
+from .models import (Job,JobApplication,JobPost,SavedJobPost,Review)
 from .serializers import (JobApplicationSerializer,JobSerializer,SavedJobSerializer,ReviewSerializer,JobAdvertSerializer)
 
 
@@ -28,14 +28,14 @@ class JobAdvertListCreate(generics.ListCreateAPIView):
     authentication_classes = [JWTAuthentication]
     permission_classes = [permissions.IsAuthenticated]
     pagination_class = LimitOffsetPagination 
-    queryset = JobAdvert.objects.all()
+    queryset = JobPost.objects.all()
     serializer_class = JobAdvertSerializer
     
 
 class JobAdvertDetail(generics.RetrieveUpdateDestroyAPIView):
     authentication_classes = [JWTAuthentication]
     permission_classes = [permissions.IsAuthenticated]
-    queryset = JobAdvert.objects.all()
+    queryset = JobPost.objects.all()
     serializer_class = JobAdvertSerializer
 
 
@@ -62,13 +62,13 @@ class SavedJobListCreate(generics.ListCreateAPIView):
     authentication_classes = [JWTAuthentication]
     permission_classes = [permissions.IsAuthenticated]
     pagination_class = LimitOffsetPagination 
-    queryset = SavedJobAdvert.objects.all()
+    queryset = SavedJobPost.objects.all()
     serializer_class = SavedJobSerializer
 
 class SavedJobDetail(generics.RetrieveUpdateDestroyAPIView):
     authentication_classes = [JWTAuthentication]
     permission_classes = [permissions.IsAuthenticated] 
-    queryset = SavedJobAdvert.objects.all()
+    queryset = SavedJobPost.objects.all()
     serializer_class = SavedJobSerializer
 
 

@@ -21,11 +21,14 @@ class UserProfileView(generics.RetrieveAPIView):
     lookup_field = 'pk'
     renderer_classes = [JSONRenderer]
     queryset = User.objects.all()
+    serializer_class = UserSerializer
     pagination_class = None
-    
-    def get_queryset(self):
+
+    def get(self, request, *args, **kwargs):
         user = self.request.user
-        return User.objects.filter(email=user.email)
+        serializer = self.get_serializer(instance=user)
+        return Response(serializer.data, status=status.HTTP_200_OK)
+
     
 class UserCreate(generics.CreateAPIView):
     permission_classes = [AllowAny]

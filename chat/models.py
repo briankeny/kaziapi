@@ -27,4 +27,4 @@ class Message(models.Model):
     timestamp = models.DateTimeField(auto_now_add=True)
 
     def __str__(self):
-        return f'ID:{self.message_id} From - {self.sender.first_name} to {self.receiver.first_name} - chat - {self.conversation.chat_id} '
+        return f'ID:{self.message_id} From - {self.sender.full_name} to {self.receiver.full_name} - chat - {self.conversation.chat_id} '

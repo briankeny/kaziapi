@@ -1,0 +1,46 @@
+{% load static %}
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <meta http-equiv="X-UA-Compatible" content="ie=edge">
+
+  <meta name="description" content="Kazi Mtaani we connect blue collar job seekers with potential employers">
+  <meta name="keywords" content="Kazi Mtaani, careers, blue collar jobs, find your dream job">
+  <meta name="author" content="Brian Keny">  
+  <meta name="robots" content="index, follow">
+
+  <title>{% block title %}{% endblock title %}</title>
+
+    <!-- Add this link to your HTML head -->
+  <link rel="icon" href="{% static 'favicon.ico' %}">
+  <link rel="stylesheet" href="{% static 'recovery/css/main.css' %}">
+  <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.2.0/css/all.min.css" integrity="sha512-zCex2Tfw2F+sA/AgPhon/Iu67tGNk/z7O8nvdxPku9VnQ7BKAF7t97wiRRjU75qEXL1BEdqCW0iuz54YaqNsOg==" crossorigin="anonymous" referrerpolicy="no-referrer" />
+
+</head>
+<body>
+    <header class="header">
+    {% block header %}
+        <div class="logo">
+            <img class="logo" src="{% static 'kaziweb/images/logo.png'%}" alt="logo-img">
+        </div>
+        
+        <div class="brand-container">
+            <h1 class="brand-name">KaziMtaani</h1>
+        </div>
+    {% endblock header %}
+    </header>
+  
+    {% block content %}
+    {% endblock content %}
+
+    <footer>
+      {% block footer %}
+        <p>&copy; 2024 KaziMtaani.</p>
+      {% endblock footer %}
+    </footer>
+
+    <script src="{% static 'recovery/js/app.js' %}"></script>
+</body>
+</html>
