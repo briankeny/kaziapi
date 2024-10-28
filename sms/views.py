@@ -8,10 +8,17 @@ from rest_framework.views import APIView
 from django.contrib.auth.hashers import check_password,make_password
 from django.utils import timezone
 
+from django.http import HttpResponse
+from django.views.decorators.csrf import csrf_exempt
+from django.utils.decorators import method_decorator
+from django.views.decorators.csrf import csrf_exempt
+
 from .models import OtpSmsToken
-from .serializers import OtpSmsTokenSerializer
+from .serializers import OtpSmsTokenSerializer,USSDRequestSerializer
 from .talk import SMS
 from users.models import User
+from .ussd import KaziUSSDActions
+
 
 #Create Phone OTP using POST method and Push OTP Code to mobile using Africastalking API sms service  
 class OtpSmsCreateView(generics.CreateAPIView):
@@ -134,3 +141,26 @@ class VerifyOTPView(generics.UpdateAPIView):
     def patch(self,request,*args,**kwargs):
         return Response({'error':'Unsupported Request'},status=status.HTTP_405_METHOD_NOT_ALLOWED)
     
+
+
+@method_decorator(csrf_exempt, name='dispatch')
+class KaziUSSDView(generics.ListCreateAPIView):
+    permission_classes = (AllowAny,)
+    serializer_class = USSDRequestSerializer
+    
+    
+    def create(self, request, *args, **kwargs):
+        data = request.data.copy()
+        phoneNumber = data.get('phoneNumber',None) 
+        text = data.get('text','')
+        sessionId = data.get('sessionId',None)
+        serviceCode  = data.get('serviceCode',None)
+        
+        print(f'{phoneNumber} {sessionId} {text} {serviceCode}')
+
+        sender =  self.__class__
+
+        kaziussd = KaziUSSDActions(phoneNumber=phoneNumber,text=text,sender=sender)
+        message = kaziussd.switchAction()
+
+        return HttpResponse(message)

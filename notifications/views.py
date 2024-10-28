@@ -38,9 +38,7 @@ class NotificationListView(generics.ListAPIView):
         return queryset
 
 
-
 # This View is For Changing Nofitifications 
-
 class NotificationDetail(generics.RetrieveUpdateDestroyAPIView):
     queryset = Notification.objects.all()
     authentication_classes = [JWTAuthentication]

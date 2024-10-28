@@ -22,7 +22,6 @@ def send_email(subject, template, recipient_list, context):
         html_message=html_message
     )
 
-
 reset_password_token_created = Signal()
 @receiver(reset_password_token_created)
 def password_reset_token_created(sender, instance, reset_password_token, *args, **kwargs):

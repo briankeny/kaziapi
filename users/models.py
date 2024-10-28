@@ -30,6 +30,7 @@ class User(AbstractUser, PermissionsMixin):
         null=True,
         choices=accounts,
         default='jobseeker')
+    industry = models.CharField(max_length=100,null=True,default=None)
     mobile_number = PhoneNumberField(null=False, blank=False, unique=True)
     mobile_verified = models.BooleanField(default=False,null=True)
     password = models.CharField(max_length=100, null=False,default=None)

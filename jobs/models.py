@@ -46,14 +46,9 @@ class JobPost(models.Model):
     salary_range = models.CharField(max_length=50, null=True, blank=True)
     recruiter = models.ForeignKey(User, on_delete=models.CASCADE, related_name='post_by')
     status = models.CharField(max_length=20, default='open', choices=STATUS_CHOICES)
-
     deadline_date = models.DateTimeField(default=timezone.now() + timezone.timedelta(minutes=3600))
     date_posted = models.DateTimeField(auto_now_add=True)
  
-    def save(self, *args, **kwargs):
-        self.date_of_expiry = timezone.now() + timezone.timedelta(minutes=20)
-        super().save(*args, **kwargs)
-    
     def __str__(self):
         return self.title
 
@@ -69,7 +64,12 @@ class JobApplication(models.Model):
     applicant = models.ForeignKey(User, on_delete=models.CASCADE, related_name='applications')
     score  = models.PositiveIntegerField(default=0,null=False)
     status = models.CharField(max_length=20, default='applied')
+    approval_date = models.CharField( default=timezone.now())
     application_date = models.DateTimeField(auto_now_add=True)
+
+    def save(self, *args, **kwargs):
+        self.approval_date = timezone.now()
+        super().save(*args, **kwargs)
     
     def __str__(self):
         return f"{self.applicant.full_name} applied to {self.jobpost.title}"
