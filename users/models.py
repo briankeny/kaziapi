@@ -19,7 +19,7 @@ class User(AbstractUser, PermissionsMixin):
     first_name=None
     last_name = None
     user_id = models.AutoField(primary_key=True)
-    username= models.CharField(max_length=30, default=None,null=False,unique=True)
+    username= models.CharField(max_length=30, default=None,null=True,unique=True)
     full_name = models.CharField(max_length=100, default=None, null=False,blank=True)
     bio = models.CharField(max_length=300, default="Hi there I'm on Kazi Mtaani",null=True,blank=True)
     email = models.CharField(max_length=100, default=None, null=True,unique=True)
@@ -30,7 +30,7 @@ class User(AbstractUser, PermissionsMixin):
         null=True,
         choices=accounts,
         default='jobseeker')
-    industry = models.CharField(max_length=100,null=True,default=None)
+    industry = models.CharField(max_length=150,null=True,default=None)
     mobile_number = PhoneNumberField(null=False, blank=False, unique=True)
     mobile_verified = models.BooleanField(default=False,null=True)
     password = models.CharField(max_length=100, null=False,default=None)
@@ -50,7 +50,7 @@ class User(AbstractUser, PermissionsMixin):
 
    
     USERNAME_FIELD = 'mobile_number'
-    REQUIRED_FIELDS = ['full_name','account_type']
+    REQUIRED_FIELDS = ['full_name','account_type','email']
 
     def __str__(self):
         return f'{self.last_name}-{self.full_name}'

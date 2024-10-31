@@ -28,7 +28,7 @@ class JobPost(models.Model):
     EXPERIENCE_CHOICES = (
         ('entry_level', 'Entry Level'),
         ('mid_level', 'Mid Level'),
-        ('senior', 'Senior'),
+        ('senior', 'Senior')
     )
 
     STATUS_CHOICES = (
@@ -39,9 +39,10 @@ class JobPost(models.Model):
     post_id = models.AutoField(primary_key=True)
     category = models.ForeignKey(Job,on_delete=models.SET_DEFAULT,default=None,blank=True,null=True)
     title = models.CharField(max_length=255,null=False,default=None)
+    job_picture = models.ImageField(upload_to='job_pictures', null=True, blank=True,max_length=300)
     description = models.TextField()
     location = models.CharField(max_length=255)
-    employment_type = models.CharField(max_length=20, choices=EMPLOYMENT_CHOICES)
+    employment_type = models.CharField(max_length=20,default='full_time', choices=EMPLOYMENT_CHOICES)
     experience_level = models.CharField(max_length=20, choices=EXPERIENCE_CHOICES)
     salary_range = models.CharField(max_length=50, null=True, blank=True)
     recruiter = models.ForeignKey(User, on_delete=models.CASCADE, related_name='post_by')

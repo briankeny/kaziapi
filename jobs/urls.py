@@ -6,8 +6,9 @@ urlpatterns = [
     path('jobs/', views.JobListCreate.as_view(), name='job-list-create'),
     path('jobs/<int:pk>/', views.JobDetail.as_view(), name='job-detail'),
 
-    path('job-posts/', views.JobAdvertListCreate.as_view(), name='jobskill-list-create'),
-    path('job-post/<int:pk>/', views.JobAdvertDetail.as_view(), name='jobskill-detail'),
+    path('job-post-create/', views.JobPostListCreate.as_view(), name='job-post-create'),
+    path('job-posts/', views.JobPostList.as_view(), name='job-posts-list'),
+    path('job-post/<int:pk>/', views.JobApplicationDetail.as_view(), name='job-post-detail'),
 
     path('job-applications/',views.JobApplicationListCreate.as_view(), name='application-list-create'),
     path('job-application/<int:pk>/', views.JobApplicationDetail.as_view(), name='application-detail'),

@@ -22,10 +22,10 @@ from .ussd import KaziUSSDActions
 
 #Create Phone OTP using POST method and Push OTP Code to mobile using Africastalking API sms service  
 class OtpSmsCreateView(generics.CreateAPIView):
+    permission_classes = (AllowAny,)
     serializer_class = OtpSmsTokenSerializer
     model = OtpSmsToken
-    permission_classes = (AllowAny,)
-
+   
     def create(self,request,*args,**kwargs):
         data = self.request.data.copy()
         phone = data.get('mobile_number',None)        
@@ -101,7 +101,7 @@ class OtpSmsCreateView(generics.CreateAPIView):
                                  status=status.HTTP_429_TOO_MANY_REQUESTS)
         
         self.perform_create(serializer)  
-        return Response({'message':f'A Verification code has been sent to your phone {phone} via sms'},
+        return Response({'message':f'A Verification code has been sent to {phone} via sms'},
                          status=status.HTTP_201_CREATED) 
     
 class VerifyOTPView(generics.UpdateAPIView):
@@ -118,8 +118,13 @@ class VerifyOTPView(generics.UpdateAPIView):
         
         try:
             item  = OtpSmsToken.objects.get(mobile_number=phone)
+            print(f'found otp{item}')
             otp = str(otp)
+            print(f'otp {otp} {type(otp)} {item.otp}')
+
             is_code_valid = check_password(otp,item.otp)
+
+            print(f'{is_code_valid}')
             
             if not is_code_valid:
                  return Response({'error':'Invalid One Time Password'},status=status.HTTP_400_BAD_REQUEST)
@@ -127,11 +132,9 @@ class VerifyOTPView(generics.UpdateAPIView):
             item.save()
             return Response({'message':f'Phone number has been verified successfully!'}, status=status.HTTP_200_OK)
 
-        except OtpSmsToken.DoesNotExist:
-            return Response({'error':'Incorrect phone number provided'},status=status.HTTP_400_BAD_REQUEST)
-
         except Exception as e:
-            return Response({'error':'Invalid OTP'},status=status.HTTP_400_BAD_REQUEST)
+            print(f'Found Error {e}')
+            return Response({'error':'Invalid credentials'},status=status.HTTP_400_BAD_REQUEST)
                
         
     def put(self,request,*args,**kwargs):

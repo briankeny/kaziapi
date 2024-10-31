@@ -1,6 +1,4 @@
-from django.conf import settings
 from users.models import User
-from jobs.models import Job,JobApplication
 from .signals import send_job_enquiries_to_client,send_job_applications_to_client
 
 class KaziUSSDMessages:

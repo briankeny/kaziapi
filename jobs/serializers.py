@@ -1,4 +1,5 @@
 from rest_framework import serializers
+from users.serializers import UserSerializer
 from .models import Job, SavedJobPost,Review,JobApplication,JobPost
 
 class JobSerializer(serializers.ModelSerializer):
@@ -7,7 +8,14 @@ class JobSerializer(serializers.ModelSerializer):
         fields = '__all__'
 
 
-class JobAdvertSerializer(serializers.ModelSerializer):
+class JobPostSerializer(serializers.ModelSerializer):
+    class Meta:
+        model = JobPost
+        fields = '__all__'
+
+class JobPostWithOwnerSerializer(serializers.ModelSerializer):
+    recruiter = UserSerializer()
+    category = JobSerializer()
     class Meta:
         model = JobPost
         fields = '__all__'

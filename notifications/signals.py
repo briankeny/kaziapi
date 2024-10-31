@@ -4,17 +4,18 @@ from users.models import User
 from .models import Notification
 from jobs.models import JobPost
 from django.dispatch import receiver
+from django.core.mail import send_mail  
+from django.conf import settings
 
 # Function for saving Notification
-def save_Notification(title="",message="",category="",receiver=None,participant=None,action=None):
+def save_Notification(subject="",message="",category="",receiver=None,action=None):
     try:
         if receiver:
             notification = Notification(
-                title = title,
+                subject = subject,
                 message = message,
                 notification_category = category,
                 user = receiver,
-                participant = participant,
                 action=action,
                 )
             notification.save()
@@ -22,11 +23,12 @@ def save_Notification(title="",message="",category="",receiver=None,participant=
             pass  
 
 
-def send_notification_email(sender=None,subject="",message="",recipients=[]):
+def send_notification_email(subject="",message="",recipients=[]):
     try:
-        pass
-        #send_mail(subject,message,sender,recipients)
+        sender = settings.EMAIL_HOST_USER
+        send_mail(subject,message,sender,recipients)
     except Exception as e:
+         print('Found error',e)
          pass
 
 
@@ -34,39 +36,32 @@ def send_notification_email(sender=None,subject="",message="",recipients=[]):
 @receiver(post_save,sender =User)
 def send_welcome_message(sender, instance, created, **kwargs):
     if created :
-        notification_type = "message"
         notification_category = "general"
-        action= f'{instance.user_id}'
-        participant = instance
-    
+       
         # Notify Super User A New User Has Created An Account
         try:
             company = User.objects.get(is_superuser=True)
-        except Exception as e:
+            action= f'/user/{company.user_id}/'
+            #  Send Notification To The Organization
+            message = f"{(instance.account_type).capitalize()}  {instance.full_name} username {instance.username}  has been registered successfuly!"
+            subject = f"A New Account - {instance.full_name} Registration"
+            save_Notification(subject,message,'user',company,f'/user/{instance.user_id}/')
+        
+        except User.DoesNotExist:
             company = None
             pass
-        
-        if company != None:
-            #  Send Notification To The Organization
-            message = f"{(instance.account_type).capitalize()}  {instance.full_name} username {instance.username}  Has Been Registered Successfuly"
-            title = f"A New Account - {instance.full_name} Registration"
-            save_Notification(title,message,notification_type,notification_category,company,[participant],action)
-
-        # Send Welcome Message To The User
-            if company != None and company.profile_picture:
-                action = company
-                participant = company
                 
             # Save Notification For New User
-            message = "Welcome To KaziMtaani. This Organization is committed to serving you. Feel Free to contact Us for any incquiries or if you need our assistance .Thank You For Chosing Us!"
-            title = f"{instance.full_name} welcome to Kazi Mtaani"
-            save_Notification(title,message,notification_type,notification_category,instance,[company],action)
+            message = "This organization is committed to serving you. Feel free to contact us for any incquiries or if you need our assistance .Thank you for chosing us!"
+            subject = f"{instance.full_name} welcome to KaziMtaani!"
+            save_Notification(subject,message,notification_category,instance,action)
 
- 
+            if instance.email:
+                send_notification_email(subject=subject,message=message,recipients=[instance.email])
+
 # Job Posts
 @receiver(post_save, sender=JobPost)
 def send_JobPost_notification(sender,instance,created,**kwargs):
-    notification_type = "message"
     notification_category = "jobpost"
     action=instance.post_id
     recipients = []
