@@ -20,6 +20,7 @@ def save_Notification(subject="",message="",category="",receiver=None,action=Non
                 )
             notification.save()
     except Exception as e :
+            print(f'Saving not error {e}')
             pass  
 
 
@@ -28,7 +29,7 @@ def send_notification_email(subject="",message="",recipients=[]):
         sender = settings.EMAIL_HOST_USER
         send_mail(subject,message,sender,recipients)
     except Exception as e:
-         print('Found error',e)
+         print(f'Found Email error {e}')
          pass
 
 
@@ -58,18 +59,17 @@ def send_welcome_message(sender, instance, created, **kwargs):
         if instance.email:
             send_notification_email(subject=subject,message=message,recipients=[instance.email])
 
-# Job Post
+# Job Post Notification
 @receiver(post_save, sender=JobPost)
-def send_JobPost_notification(sender,instance,created,**kwargs): 
+def send_Job_Post_notification(sender,instance,created,**kwargs): 
     if created:
         notification_category = "jobpost"
         action= f'/job-post/{instance.post_id}/'
         message = f"{instance.description[:200]}" 
-        subject = f"{instance.subject}"
+        subject = f"New Job - {instance.title[:50]}"
         
         recipients = User.objects.filter(account_type='jobseeker')
 
         if len(recipients) >0 :
             for recipient in recipients:
                 save_Notification(subject,message,notification_category,recipient,action)
-       

@@ -76,7 +76,8 @@ class UserInfo(models.Model):
         return f'{self.user.full_name} {self.title}' 
     
 class ProfileVisit(models.Model):
-    user = models.ForeignKey(User, on_delete=models.CASCADE, primary_key=True,related_name='user')
+    id  = models.AutoField(primary_key=True)
+    user = models.ForeignKey(User, on_delete=models.CASCADE, related_name='user')
     visitor = models.ForeignKey(User, on_delete=models.CASCADE, related_name='user_visitor')
     timestamp = models.DateTimeField(auto_now_add=True)
     
