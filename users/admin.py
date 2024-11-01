@@ -1,6 +1,6 @@
 from django.contrib import admin
 from django.contrib.auth.admin import UserAdmin
-from .models import User, UserSkill
+from .models import User, UserSkill,UserInfo,ProfileVisit,SearchAppearance
 
 @admin.register(User)
 class CustomUserAdmin(UserAdmin):
@@ -27,3 +27,24 @@ class CustomUserAdmin(UserAdmin):
 class UserSkillAdmin(admin.ModelAdmin):
     list_display = ('user', 'skill_name')
     search_fields = ('skill_name', 'user__email')
+
+# Register the models with the admin site
+class UserInfoAdmin(admin.ModelAdmin):
+    list_display = ('user', 'subject', 'title', 'start_date', 'end_date')
+    search_fields = ('user__username', 'subject', 'title')
+    list_filter = ('start_date', 'end_date')
+
+
+class ProfileVisitAdmin(admin.ModelAdmin):
+    list_display = ('user', 'visitor', 'timestamp')
+    search_fields = ('user__username', 'visitor__username')
+    list_filter = ('timestamp',)
+
+class SearchAppearanceAdmin(admin.ModelAdmin):
+    list_display = ('user', 'count')
+    search_fields = ('user__username',)
+    list_filter = ('count',)
+
+admin.site.register(UserInfo, UserInfoAdmin)
+admin.site.register(ProfileVisit, ProfileVisitAdmin)
+admin.site.register(SearchAppearance, SearchAppearanceAdmin)

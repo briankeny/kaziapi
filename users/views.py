@@ -1,11 +1,12 @@
 import os
+from django.db.models import F
 from rest_framework import generics
 from rest_framework.renderers import JSONRenderer
 from rest_framework import status
 from rest_framework.pagination import LimitOffsetPagination
 from rest_framework.response import Response
-from .models import User,UserSkill
-from .serializers import UserSerializer,UserSkillSerializer
+from .models import User,UserSkill,UserInfo,ProfileVisit,SearchAppearance
+from .serializers import UserSerializer,UserSkillSerializer,UserInfoSerializer,ProfileVisitSerializer,SearchAppearanceSerializer
 from rest_framework_simplejwt.authentication import  JWTAuthentication
 from rest_framework.parsers import MultiPartParser
 from rest_framework.permissions import IsAuthenticated, AllowAny
@@ -94,7 +95,7 @@ class UserListView(generics.ListAPIView):
     def get_queryset(self):
         queryset = super().get_queryset()
         # Optional search term filtering
-        ordering = str(self.request.query_params.get('ordering', 'email'))
+        ordering = str(self.request.query_params.get('ordering','user_id'))
         search_term = str(self.request.query_params.get('searchTerm','empty'))
         search = str(self.request.query_params.get('search','empty'))
         queryset = User.objects.all()
@@ -106,12 +107,19 @@ class UserListView(generics.ListAPIView):
             except Exception as e:
                 queryset = User.objects.none()
 
+            # Update search appearance count for each user in the filtered queryset
+            for user in queryset:
+                search_appearance, created = SearchAppearance.objects.get_or_create(user=user)
+                search_appearance.count = F('count') + 1
+                search_appearance.save()
+                # Ensures the updated count is retrieved immediately
+                search_appearance.refresh_from_db()  
+
         if ordering:
             try:
                 queryset = queryset.order_by(ordering)
             except Exception as e:
                 queryset = User.objects.none()
-
         return queryset
 
 class UserDetail(generics.RetrieveUpdateDestroyAPIView):
@@ -208,3 +216,63 @@ class UserSkillDetail(generics.RetrieveUpdateDestroyAPIView):
     permission_classes = [IsAuthenticated]
     queryset = UserSkill.objects.all()
     serializer_class = UserSkillSerializer
+
+# List and create UserInfo
+class UserInfoCreate(generics.CreateAPIView):
+    queryset = UserInfo.objects.all()
+    serializer_class = UserInfoSerializer
+    permission_classes = [IsAuthenticated]
+
+    # Automatically set the user
+    def perform_create(self, serializer):
+        serializer.save(user=self.request.user)
+
+
+# List and create UserInfo
+class UserInfoListView(generics.ListAPIView):
+    queryset = UserInfo.objects.all()
+    serializer_class = UserInfoSerializer
+    permission_classes = [IsAuthenticated]
+
+    def get_queryset(self):
+        queryset = super().get_queryset()
+        # Optional search term filtering
+        ordering = str(self.request.query_params.get('ordering','user_id'))
+        search_term = str(self.request.query_params.get('searchTerm','empty'))
+        search = str(self.request.query_params.get('search','empty'))
+        queryset = User.objects.all()
+        if search_term != "empty" and search != "empty":
+            try:
+                field = f'{search_term}__icontains'
+                # Use filter() for case-insensitive search using icontains
+                queryset = queryset.filter(**{field: search})
+            except Exception as e:
+                queryset = []
+
+        if ordering:
+            try:
+                queryset = queryset.order_by(ordering)
+            except Exception as e:
+                queryset = []
+        return queryset
+
+
+# Retrieve a single UserInfo instance
+class UserInfoDetailView(generics.RetrieveUpdateDestroyAPIView):
+    queryset = UserInfo.objects.all()
+    serializer_class = UserInfoSerializer
+    permission_classes = [IsAuthenticated]
+
+# List and create ProfileVisit
+class ProfileVisitListCreateView(generics.ListCreateAPIView):
+    queryset = ProfileVisit.objects.all()
+    serializer_class = ProfileVisitSerializer
+    permission_classes = [IsAuthenticated]
+
+    def perform_create(self, serializer):
+        user = self.request.user
+        visitor = serializer.validated_data.get('visitor')
+        if user != visitor:
+            serializer.save(user=user)  # Track visitor as the requesting user
+        else:
+            raise ValidationError("A user cannot visit their own profile.")

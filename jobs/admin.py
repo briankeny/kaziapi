@@ -1,5 +1,5 @@
 from django.contrib import admin
-from .models import Job, JobPost, JobApplication, SavedJobPost, Review
+from .models import Job, JobPost, JobApplication, Review
 
 # Register your models here.
 
@@ -19,10 +19,6 @@ class JobApplicationAdmin(admin.ModelAdmin):
     list_display = ('jobpost', 'applicant', 'score', 'status', 'application_date')
     list_filter = ('status',)
     search_fields = ('applicant__email', 'jobpost__title')
-
-@admin.register(SavedJobPost)
-class SavedJobAdvertAdmin(admin.ModelAdmin):
-    list_display = ('save_id', 'user', 'savedjob', 'date_posted')
 
 @admin.register(Review)
 class ReviewAdmin(admin.ModelAdmin):

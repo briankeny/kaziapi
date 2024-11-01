@@ -34,7 +34,7 @@ class User(AbstractUser, PermissionsMixin):
     mobile_number = PhoneNumberField(null=False, blank=False, unique=True)
     mobile_verified = models.BooleanField(default=False,null=True)
     password = models.CharField(max_length=100, null=False,default=None)
-    address = models.CharField(max_length=200, default="Eldoret", null=True)
+    location = models.CharField(max_length=200, default="Eldoret", null=True)
     verification_badge = models.CharField(max_length=100, null=True,default=None,choices=BADGES)
     device_token = models.CharField(max_length=100,default=None, null=True,blank = True)
     date_updated = models.DateTimeField(default=timezone.now)
@@ -56,10 +56,42 @@ class User(AbstractUser, PermissionsMixin):
         return f'{self.last_name}-{self.full_name}'
     
 
-
 class UserSkill(models.Model):
     user = models.ForeignKey(User, on_delete=models.CASCADE, related_name='skills')
     skill_name = models.CharField(max_length=255)
 
     def __str__(self):
         return self.skill_name
+
+
+class UserInfo(models.Model):
+    user = models.ForeignKey(User, on_delete=models.CASCADE, related_name='user_data')
+    subject = models.CharField(max_length=100,null=False)
+    title = models.CharField(max_length=255,null=False)
+    description = models.TextField(default='',null=False)
+    start_date =   models.DateTimeField(default=None,null=True)
+    end_date =  models.DateTimeField(default=None,null=True)
+
+    def __str__(self):
+        return f'{self.user.full_name} {self.title}' 
+    
+class ProfileVisit(models.Model):
+    user = models.ForeignKey(User, on_delete=models.CASCADE, primary_key=True,related_name='user')
+    visitor = models.ForeignKey(User, on_delete=models.CASCADE, related_name='user_visitor')
+    timestamp = models.DateTimeField(auto_now_add=True)
+    
+    class Meta:
+         # Ensures unique visits
+        unique_together = ('user', 'visitor') 
+        ordering = ['-timestamp']
+
+    def __str__(self):
+        return f'{self.user.full_name} visitor {self.visitor.full_name}'
+
+
+class SearchAppearance(models.Model):
+    user = models.ForeignKey(User, on_delete=models.CASCADE, related_name='search_appearances')
+    count = models.IntegerField(default=0)
+
+    def __str__(self):
+        return f'{self.user.username} - {self.count} search appearances'

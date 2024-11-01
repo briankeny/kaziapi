@@ -75,6 +75,7 @@ INSTALLED_APPS = [
     'jobs.apps.JobsConfig',
     'sms.apps.SmsConfig',
     'recovery.apps.RecoveryConfig',
+    'kaziai.apps.KaziaiConfig',
     
     # Third Party Apps 
     'gunicorn',

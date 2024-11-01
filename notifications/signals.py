@@ -37,7 +37,6 @@ def send_notification_email(subject="",message="",recipients=[]):
 def send_welcome_message(sender, instance, created, **kwargs):
     if created :
         notification_category = "general"
-       
         # Notify Super User A New User Has Created An Account
         try:
             company = User.objects.get(is_superuser=True)
@@ -51,30 +50,26 @@ def send_welcome_message(sender, instance, created, **kwargs):
             company = None
             pass
                 
-            # Save Notification For New User
-            message = "This organization is committed to serving you. Feel free to contact us for any incquiries or if you need our assistance .Thank you for chosing us!"
-            subject = f"{instance.full_name} welcome to KaziMtaani!"
-            save_Notification(subject,message,notification_category,instance,action)
+        # Save Notification For New User
+        message = "This organization is committed to serving you. Feel free to contact us for any incquiries or if you need our assistance .Thank you for chosing us!"
+        subject = f"{instance.full_name} welcome to KaziMtaani!"
+        save_Notification(subject,message,notification_category,instance,action)
 
-            if instance.email:
-                send_notification_email(subject=subject,message=message,recipients=[instance.email])
+        if instance.email:
+            send_notification_email(subject=subject,message=message,recipients=[instance.email])
 
-# Job Posts
+# Job Post
 @receiver(post_save, sender=JobPost)
-def send_JobPost_notification(sender,instance,created,**kwargs):
-    notification_category = "jobpost"
-    action=instance.post_id
-    recipients = []
+def send_JobPost_notification(sender,instance,created,**kwargs): 
+    if created:
+        notification_category = "jobpost"
+        action= f'/job-post/{instance.post_id}/'
+        message = f"{instance.description[:200]}" 
+        subject = f"{instance.subject}"
+        
+        recipients = User.objects.filter(account_type='jobseeker')
 
-    # 
-    if created:  
-        # Notify People Subscribed to Owners Post:
-        # try:
-        #     users = User.objects.filter()
-        # except Exception as e:
-        #     pass
-
-        pass
-
+        if len(recipients) >0 :
+            for recipient in recipients:
+                save_Notification(subject,message,notification_category,recipient,action)
        
-    

@@ -19,15 +19,15 @@ class Job(models.Model):
 
 class JobPost(models.Model):
     EMPLOYMENT_CHOICES = (
-        ('full_time', 'Full-time'),
-        ('part_time', 'Part-time'),
+        ('full time', 'Full time'),
+        ('part time', 'Part time'),
         ('contract', 'Contract'),
-        ('one_time', 'One-time'),
+        ('one time', 'One time'),
     )
     
     EXPERIENCE_CHOICES = (
-        ('entry_level', 'Entry Level'),
-        ('mid_level', 'Mid Level'),
+        ('entry level', 'Entry Level'),
+        ('mid level', 'Mid Level'),
         ('senior', 'Senior')
     )
 
@@ -42,27 +42,40 @@ class JobPost(models.Model):
     job_picture = models.ImageField(upload_to='job_pictures', null=True, blank=True,max_length=300)
     description = models.TextField()
     location = models.CharField(max_length=255)
-    employment_type = models.CharField(max_length=20,default='full_time', choices=EMPLOYMENT_CHOICES)
-    experience_level = models.CharField(max_length=20, choices=EXPERIENCE_CHOICES)
+    employment_type = models.CharField(max_length=20,default='full time', choices=EMPLOYMENT_CHOICES)
+    experience_level = models.CharField(max_length=20, default='entry level',choices=EXPERIENCE_CHOICES)
     salary_range = models.CharField(max_length=50, null=True, blank=True)
     recruiter = models.ForeignKey(User, on_delete=models.CASCADE, related_name='post_by')
+    impressions = models.IntegerField(default=0)
     status = models.CharField(max_length=20, default='open', choices=STATUS_CHOICES)
     deadline_date = models.DateTimeField(default=timezone.now() + timezone.timedelta(minutes=3600))
     date_posted = models.DateTimeField(auto_now_add=True)
- 
+
+
+    def increment_impressions(self):
+        self.impressions += 1
+        self.save(update_fields=['impressions'])
+
     def __str__(self):
         return self.title
+
+class UserJobPostInteraction(models.Model):
+    jobpost = models.ForeignKey(JobPost, on_delete=models.CASCADE, related_name='job_interactions')
+    user = models.ForeignKey(User, on_delete=models.CASCADE, related_name='user_job_interaction')
+
+    class Meta:
+        unique_together = ('jobpost', 'user')
 
 class JobApplication(models.Model):
     STATUS_CHOICES = (
         ('applied','applied'),
         ('reviewed','reviewed'),
         ('accepted','accepted'),
-        ('declined','accepted')
+        ('declined','declined')
     )
 
-    jobpost = models.ForeignKey(JobPost, on_delete=models.CASCADE, related_name='applications')
-    applicant = models.ForeignKey(User, on_delete=models.CASCADE, related_name='applications')
+    jobpost = models.ForeignKey(JobPost, on_delete=models.CASCADE, related_name='job_application')
+    applicant = models.ForeignKey(User, on_delete=models.CASCADE, related_name='job_applicant')
     score  = models.PositiveIntegerField(default=0,null=False)
     status = models.CharField(max_length=20, default='applied')
     approval_date = models.CharField( default=timezone.now())
@@ -74,15 +87,6 @@ class JobApplication(models.Model):
     
     def __str__(self):
         return f"{self.applicant.full_name} applied to {self.jobpost.title}"
-
-class SavedJobPost(models.Model):
-    save_id = models.AutoField(primary_key=True)
-    user = models.ForeignKey(User, on_delete=models.CASCADE, related_name='saved_by')
-    savedjob = models.ForeignKey(JobPost, on_delete=models.CASCADE, related_name='saved_job')
-    date_posted = models.DateTimeField(auto_now_add=True)
-
-    def __str__(self):
-        return f"{self.user.email} saved {self.savedjob.title}"
 
 class Review(models.Model):
     review_id = models.AutoField(primary_key=True)
