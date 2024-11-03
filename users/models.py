@@ -57,14 +57,16 @@ class User(AbstractUser, PermissionsMixin):
     
 
 class UserSkill(models.Model):
+    id = models.AutoField(primary_key=True)
     user = models.ForeignKey(User, on_delete=models.CASCADE, related_name='skills')
     skill_name = models.CharField(max_length=255)
 
     def __str__(self):
-        return self.skill_name
+        return f'{self.user.username} - {self.skill_name}'
 
 
 class UserInfo(models.Model):
+    id = models.AutoField(primary_key=True)
     user = models.ForeignKey(User, on_delete=models.CASCADE, related_name='user_data')
     subject = models.CharField(max_length=100,null=False)
     title = models.CharField(max_length=255,null=False)

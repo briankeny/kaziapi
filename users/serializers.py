@@ -23,7 +23,7 @@ class UserSkillSerializer(serializers.ModelSerializer):
 class UserInfoSerializer(serializers.ModelSerializer):
     class Meta:
         model = UserInfo
-        fields = ['user', 'subject', 'title', 'description', 'start_date', 'end_date']
+        fields = [ 'id','user', 'subject', 'title', 'description', 'start_date', 'end_date']
 
 class ProfileVisitSerializer(serializers.ModelSerializer):
     class Meta:

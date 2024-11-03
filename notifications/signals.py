@@ -52,7 +52,7 @@ def send_welcome_message(sender, instance, created, **kwargs):
             pass
                 
         # Save Notification For New User
-        message = "This organization is committed to serving you. Feel free to contact us for any incquiries or if you need our assistance .Thank you for chosing us!"
+        message = "This organization is committed to serving you. Feel free to contact us for any inquiries or if you need assistance .Thank you for chosing us!"
         subject = f"{instance.full_name} welcome to KaziMtaani!"
         save_Notification(subject,message,notification_category,instance,action)
 

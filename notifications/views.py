@@ -6,7 +6,7 @@ from rest_framework.response import Response
 from .models import (Notification)
 from rest_framework.parsers import MultiPartParser
 from rest_framework.permissions import IsAuthenticated
-from .serializers import NotificationSerializer
+from .serializers import NotificationSerializer,NotificationDetailedSerializer
 from rest_framework.pagination import PageNumberPagination,LimitOffsetPagination
 
 
@@ -16,7 +16,7 @@ class NotificationListView(generics.ListAPIView):
     permission_classes = [IsAuthenticated]
     parser_classes = (MultiPartParser,)
     renderer_classes=[JSONRenderer]
-    serializer_class = NotificationSerializer
+    serializer_class = NotificationDetailedSerializer
     pagination_class = LimitOffsetPagination 
 
     def get_queryset(self):
@@ -47,12 +47,10 @@ class NotificationDetail(generics.RetrieveUpdateDestroyAPIView):
     serializer_class = NotificationSerializer
     lookup_field = 'pk'
 
-
-
     def get(self, request, *args, **kwargs):
         user = self.request.user 
         notification = self.get_object()
-        
+
         if user.user_id != notification.user.user_id:
              return Response({}, status=status.HTTP_404_NOT_FOUND)
         serializer = self.serializer_class(notification)
@@ -60,7 +58,6 @@ class NotificationDetail(generics.RetrieveUpdateDestroyAPIView):
     
     def put(self, request, *args, **kwargs):
          return Response({'message': 'Unsupported Request or Method Not Allowed.'}, status=status.HTTP_405_METHOD_NOT_ALLOWED)
-    
 
     def delete(self, request, *args, **kwargs):
         user = self.request.user

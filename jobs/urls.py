@@ -10,7 +10,7 @@ urlpatterns = [
     path('job-posts/', views.JobPostList.as_view(), name='job-posts-list'),
     path('job-post/<int:pk>/', views.JobApplicationDetail.as_view(), name='job-post-detail'),
 
-    path('analytics/<int:pk>/', views.AnalyticsList.as_view(), name='analytics-detail'),
+    path('analytics/', views.AnalyticsList.as_view(), name='analytics-detail'),
 
     path('job-application-create/',views.JobApplicationCreate.as_view(), name='job-application-create'),
     path('job-applications/',views.JobApplicationList.as_view(), name='job-application-list'),

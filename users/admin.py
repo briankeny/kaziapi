@@ -10,7 +10,7 @@ class CustomUserAdmin(UserAdmin):
     search_fields = ('email','mobile_number', 'username', 'full_name')
     fieldsets = (
         (None, {'fields': ('username', 'email', 'password')}),
-        ('Personal Info', {'fields': ('full_name', 'bio', 'profile_picture', 'mobile_number', 'address')}),
+        ('Personal Info', {'fields': ('full_name', 'bio', 'profile_picture', 'mobile_number', 'location')}),
         ('Account Info', {'fields': ('account_type',)}),
         ('Permissions', {'fields': ('is_staff', 'is_superuser', 'is_active', 'groups', 'user_permissions')}),
         ('Important Dates', {'fields': ('last_login', 'date_updated')}),
@@ -22,11 +22,6 @@ class CustomUserAdmin(UserAdmin):
         ),
     )
     ordering = ('email',)
-
-@admin.register(UserSkill)
-class UserSkillAdmin(admin.ModelAdmin):
-    list_display = ('user', 'skill_name')
-    search_fields = ('skill_name', 'user__email')
 
 # Register the models with the admin site
 class UserInfoAdmin(admin.ModelAdmin):
@@ -45,6 +40,11 @@ class SearchAppearanceAdmin(admin.ModelAdmin):
     search_fields = ('user__username',)
     list_filter = ('count',)
 
+class UserSkillAdmin(admin.ModelAdmin):
+    list_display = ('user', 'skill_name')
+    search_fields = ('user__username', 'skill_name')
+
+admin.site.register(UserSkill, UserSkillAdmin)
 admin.site.register(UserInfo, UserInfoAdmin)
 admin.site.register(ProfileVisit, ProfileVisitAdmin)
 admin.site.register(SearchAppearance, SearchAppearanceAdmin)

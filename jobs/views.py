@@ -16,6 +16,23 @@ class JobListCreate(generics.ListCreateAPIView):
     queryset = Job.objects.all()
     serializer_class = JobSerializer
     
+    def get_queryset(self):
+        queryset = Job.objects.all()
+        # Optional search term filtering
+        search_term = str(self.request.query_params.get('searchTerm','empty'))
+        search = str(self.request.query_params.get('search','empty'))
+
+        print(f'User is searching for {search} {search_term}')
+
+        if search_term != "empty" and search != "empty":
+            try:
+                field = f'{search_term}__icontains'
+                # Use filter() for case-insensitive search using icontains
+                queryset = queryset.filter(**{field: search})
+            except Exception as e:
+                queryset = []
+
+        return queryset
 
 class JobDetail(generics.RetrieveUpdateDestroyAPIView):
     authentication_classes = [JWTAuthentication]
@@ -45,7 +62,7 @@ class JobPostList(generics.ListAPIView):
         queryset  = JobPost.objects.all()
 
         if user.account_type == 'recruiter':
-            queryset = JobPost.objects.filter(user=user)
+            queryset = JobPost.objects.filter(user=user.user_id)
         else:
             # Optional search term filtering
             search_term = str(self.request.query_params.get('searchTerm', None))
@@ -59,7 +76,7 @@ class JobPostList(generics.ListAPIView):
                     # Using filter() for case-insensitive search using icontains
                     queryset = queryset.filter(**{field: search})
                 except Exception as e:
-                        queryset = []
+                    queryset = JobPost.objects.none()
         # Increment impressions for each post in the queryset
         queryset.update(impressions=F('impressions') + 1)
         return queryset
@@ -93,7 +110,7 @@ class JobApplicationList(generics.ListAPIView):
     pagination_class = LimitOffsetPagination 
     queryset = JobApplication.objects.all()
     serializer_class = JobApplicationSerializer
-
+    
     def get_queryset(self):
         user = self.request.user
         queryset  = JobApplication.objects.all()
@@ -176,15 +193,15 @@ class AnalyticsList(generics.ListAPIView):
     authentication_classes = [JWTAuthentication]
     pagination_class = None
     queryset = JobPost.objects.all()
-    serializer_class = ReviewSerializer
+    serializer_class = JobPostSerializer
 
     def get(self, request, *args, **kwargs):
         user = self.request.user
         data = {}
         
         # Count Profile Visits and Searches
-        visits_count = ProfileVisit.objects.filter(user=user).count()
-        search_appearance = SearchAppearance.objects.filter(user=user).first()
+        visits_count = ProfileVisit.objects.filter(user=user.user_id).count()
+        search_appearance = SearchAppearance.objects.filter(user=user.user_id).first()
         searches_count = search_appearance.count if search_appearance else 0
 
         data['profilevisits'] = visits_count
@@ -192,7 +209,7 @@ class AnalyticsList(generics.ListAPIView):
 
         if user.account_type == 'recruiter':
             # Get Job Posts for Recruiter
-            jobposts = JobPost.objects.filter(recruiter=user)
+            jobposts = JobPost.objects.filter(recruiter=user.user_id)
             open_posts = jobposts.filter(status='open').count()
             closed_posts = jobposts.count() - open_posts
             
@@ -202,7 +219,7 @@ class AnalyticsList(generics.ListAPIView):
 
             for post in jobposts:
                 total_impressions += post.impressions
-                total_reviews += Review.objects.filter(jobpost=post).count()
+                total_reviews += Review.objects.filter(jobpost=post.post_id).count()
 
             data.update({
                 'reviews': total_reviews,
@@ -214,13 +231,13 @@ class AnalyticsList(generics.ListAPIView):
 
         else:
             # Get Applications for Jobseeker
-            applications = JobApplication.objects.filter(applicant=user)
+            applications = JobApplication.objects.filter(applicant=user.user_id)
             open_statuses = ['applied', 'reviewed']
             open_applications = applications.filter(status__in=open_statuses).count()
             closed_applications = applications.count() - open_applications
 
             # Count Reviews for Jobseeker
-            reviews_count = Review.objects.filter(reviewer=user).count()
+            reviews_count = Review.objects.filter(reveiwer=user.user_id).count()
             impressions_count = reviews_count + applications.count()
 
             data.update({
@@ -233,7 +250,6 @@ class AnalyticsList(generics.ListAPIView):
 
         return Response(data, status=status.HTTP_200_OK)
     
-
 
 class UserJobPostInteractionCreateView(generics.CreateAPIView):
     authentication_classes = [JWTAuthentication]

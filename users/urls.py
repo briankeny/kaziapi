@@ -9,8 +9,9 @@ urlpatterns = [
     path('user-registration/', views.UserCreate.as_view(), name='create-user'),
     path('user/<int:pk>/', views.UserDetail.as_view(), name='user-detail'),
 
-    path('userinfo/', views.UserInfoListView.as_view(), name='userinfo-list-create'),
-    path('create-userinfo/<int:pk>/', views.UserInfoCreate.as_view(), name='userinfo-detail'),
+    path('user-info/', views.UserInfoListView.as_view(), name='userinfo-list-create'),
+    path('user-info/<int:pk>/', views.UserInfoDetailView.as_view(), name='userinfo-edit'),
+    path('create-user-info/', views.UserInfoCreate.as_view(), name='userinfo-detail'),
     path('profilevisit/', views.ProfileVisitListCreateView.as_view(), name='profilevisit-list-create'),
 
     # Users skill endpoints

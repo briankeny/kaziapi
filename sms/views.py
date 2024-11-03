@@ -42,6 +42,8 @@ class OtpSmsCreateView(generics.CreateAPIView):
         tkn_str =str(tkn)
         token= make_password(tkn_str)
 
+        print(f'OTP Code is {tkn}')
+
         # send the code
         message = f'Dear Customer your OTP is {tkn}. Use this code to verify your account with Kazi Mtaani'
         convo = SMS( recipients=[phone], message = message)
@@ -118,14 +120,8 @@ class VerifyOTPView(generics.UpdateAPIView):
         
         try:
             item  = OtpSmsToken.objects.get(mobile_number=phone)
-            print(f'found otp{item}')
             otp = str(otp)
-            print(f'otp {otp} {type(otp)} {item.otp}')
-
             is_code_valid = check_password(otp,item.otp)
-
-            print(f'{is_code_valid}')
-            
             if not is_code_valid:
                  return Response({'error':'Invalid One Time Password'},status=status.HTTP_400_BAD_REQUEST)
             item.verified = True

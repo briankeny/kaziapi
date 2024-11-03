@@ -93,12 +93,12 @@ class UserListView(generics.ListAPIView):
     pagination_class = LimitOffsetPagination  # Set the pagination class
 
     def get_queryset(self):
-        queryset = super().get_queryset()
+        queryset = User.objects.all()
         # Optional search term filtering
         ordering = str(self.request.query_params.get('ordering','user_id'))
         search_term = str(self.request.query_params.get('searchTerm','empty'))
         search = str(self.request.query_params.get('search','empty'))
-        queryset = User.objects.all()
+
         if search_term != "empty" and search != "empty":
             try:
                 field = f'{search_term}__icontains'
@@ -157,7 +157,7 @@ class UserDetail(generics.RetrieveUpdateDestroyAPIView):
                                 status=status.HTTP_403_FORBIDDEN)
 
             # Prevent User From Changing Some Fields Unless Authorized
-            nonChangeableFields = ['role','email','role']
+            nonChangeableFields = ['account_type','email','mobile_number']
 
             # User id not authorized to change non changeable fields so we remove them from request.data
             requestData = {key: value for key, value in requestData.items() if key not in nonChangeableFields}  
@@ -211,6 +211,20 @@ class UserSkillListCreate(generics.ListCreateAPIView):
     queryset = UserSkill.objects.all()
     serializer_class = UserSkillSerializer
 
+
+    def get_queryset(self):
+        queryset = UserSkill.objects.all()
+        # Optional search term filtering
+        search = str(self.request.query_params.get('search','empty'))
+        if search != "empty":
+            try:
+                # Use filter() for case-insensitive search using icontains
+                queryset = queryset.filter(user=search)
+            except Exception as e:
+                queryset = []
+        
+        return queryset
+
 class UserSkillDetail(generics.RetrieveUpdateDestroyAPIView):
     authentication_classes = [JWTAuthentication]
     permission_classes = [IsAuthenticated]
@@ -235,25 +249,17 @@ class UserInfoListView(generics.ListAPIView):
     permission_classes = [IsAuthenticated]
 
     def get_queryset(self):
-        queryset = super().get_queryset()
+        queryset = UserInfo.objects.all()
         # Optional search term filtering
-        ordering = str(self.request.query_params.get('ordering','user_id'))
-        search_term = str(self.request.query_params.get('searchTerm','empty'))
         search = str(self.request.query_params.get('search','empty'))
-        queryset = User.objects.all()
-        if search_term != "empty" and search != "empty":
+        
+        if search != "empty":
             try:
-                field = f'{search_term}__icontains'
                 # Use filter() for case-insensitive search using icontains
-                queryset = queryset.filter(**{field: search})
+                queryset = queryset.filter(user=search)
             except Exception as e:
                 queryset = []
-
-        if ordering:
-            try:
-                queryset = queryset.order_by(ordering)
-            except Exception as e:
-                queryset = []
+        
         return queryset
 
 
