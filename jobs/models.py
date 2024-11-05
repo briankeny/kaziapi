@@ -19,16 +19,17 @@ class Job(models.Model):
 
 class JobPost(models.Model):
     EMPLOYMENT_CHOICES = (
-        ('full time', 'Full time'),
-        ('part time', 'Part time'),
-        ('contract', 'Contract'),
-        ('one time', 'One time'),
+        ('Full time', 'Full time'),
+        ('Part time', 'Part time'),
+        ('Contract', 'Contract'),
+        ('One time', 'One time'),
     )
     
     EXPERIENCE_CHOICES = (
-        ('entry level', 'Entry Level'),
-        ('mid level', 'Mid Level'),
-        ('senior', 'Senior')
+        ('Entry level', 'Entry Level'),
+        ('Mid level', 'Mid level'),
+        ('Senior', 'Senior'),
+        ('None', 'None'),
     )
 
     STATUS_CHOICES = (
@@ -43,19 +44,19 @@ class JobPost(models.Model):
     description = models.TextField()
     location = models.CharField(max_length=255)
     employment_type = models.CharField(max_length=20,default='full time', choices=EMPLOYMENT_CHOICES)
-    experience_level = models.CharField(max_length=20, default='entry level',choices=EXPERIENCE_CHOICES)
+    experience_level = models.CharField(max_length=20, default='None',choices=EXPERIENCE_CHOICES)
     salary_range = models.CharField(max_length=50, null=True, blank=True)
     recruiter = models.ForeignKey(User, on_delete=models.CASCADE, related_name='post_by')
     impressions = models.IntegerField(default=0)
     status = models.CharField(max_length=20, default='open', choices=STATUS_CHOICES)
     deadline_date = models.DateTimeField(default=timezone.now() + timezone.timedelta(minutes=3600))
     date_posted = models.DateTimeField(auto_now_add=True)
-
+    is_read_only = models.BooleanField(default=False)
 
     def increment_impressions(self):
         self.impressions += 1
         self.save(update_fields=['impressions'])
-
+    
     def __str__(self):
         return self.title
 

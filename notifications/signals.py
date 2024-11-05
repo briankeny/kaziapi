@@ -41,18 +41,18 @@ def send_welcome_message(sender, instance, created, **kwargs):
         # Notify Super User A New User Has Created An Account
         try:
             company = User.objects.get(is_superuser=True)
-            action= f'/user/{company.user_id}/'
+            action= f'{company.user_id}'
             #  Send Notification To The Organization
             message = f"{(instance.account_type).capitalize()}  {instance.full_name} username {instance.username}  has been registered successfuly!"
-            subject = f"A New Account - {instance.full_name} Registration"
-            save_Notification(subject,message,'user',company,f'/user/{instance.user_id}/')
+            subject = f"{instance.full_name} joined Kazi Mtaani!"
+            save_Notification(subject,message,'user',company,f'{instance.user_id}')
         
         except User.DoesNotExist:
             company = None
             pass
                 
         # Save Notification For New User
-        message = "This organization is committed to serving you. Feel free to contact us for any inquiries or if you need assistance .Thank you for chosing us!"
+        message = "This organization is committed to serving you. Thank you for chosing us!"
         subject = f"{instance.full_name} welcome to KaziMtaani!"
         save_Notification(subject,message,notification_category,instance,action)
 

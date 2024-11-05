@@ -190,7 +190,7 @@ REST_FRAMEWORK = {
          'rest_framework.permissions.IsAuthenticated',
     ],
     'DEFAULT_PAGINATION_CLASS':'rest_framework.pagination.LimitOffsetPagination',
-    'PAGE_SIZE':50,
+    'PAGE_SIZE':80,
     'APPEND_SLASH': False,
 }
 
@@ -231,3 +231,10 @@ SIMPLE_JWT = {
 # CSRF_TRUSTED_ORIGINS = [
 #     " https://2dca-80-240-201-177.ngrok-free.app", 
 # ]
+
+# Maximum file upload size in bytes (e.g., 5MB limit)
+DATA_UPLOAD_MAX_MEMORY_SIZE = 5 * 1024 * 1024  # 5 MB
+# This will set the timeout for database operations
+DATABASE_OPTIONS = {
+    'timeout': 30,  # in seconds
+}

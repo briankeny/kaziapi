@@ -20,7 +20,6 @@ class JobPostWithOwnerSerializer(serializers.ModelSerializer):
         model = JobPost
         fields = '__all__'
 
-
 class JobApplicationSerializer(serializers.ModelSerializer):
     class Meta:
         model = JobApplication
@@ -31,6 +30,12 @@ class ReviewSerializer(serializers.ModelSerializer):
         model = Review
         fields = '__all__'
 
+class ReviewDetailedSerializer(serializers.ModelSerializer):
+    reveiwer= UserSerializer()
+    jobpost = JobPostSerializer()
+    class Meta:
+        model = Review
+        fields = '__all__'
 
 class JobApplicationDetailedSerializer(serializers.ModelSerializer):
     applicant = UserSerializer()
@@ -39,8 +44,6 @@ class JobApplicationDetailedSerializer(serializers.ModelSerializer):
     class Meta:
         model = JobApplication
         fields = '__all__'
-
-
 
 class UserJobPostInteractionSerializer(serializers.ModelSerializer):
     class Meta:

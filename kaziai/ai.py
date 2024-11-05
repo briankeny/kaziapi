@@ -8,7 +8,7 @@ from IPython.display import Markdown
 # from io import BytesIO
 
 
-GOOGLE_API_KEY = os.getenv('GEMINI_KEY')
+GOOGLE_API_KEY = os.getenv('GOOGLE_API_KEY')
 genai.configure(api_key = GOOGLE_API_KEY)
 
 class AI:
@@ -18,18 +18,21 @@ class AI:
         self.prompt = prompt
         self.model_name = 'gemini-pro'
     
-    async def generateAIresponse(self):      
+    def generateAIresponse(self):      
+        content=[]
+        if self.prompt:
+             content.append(self.prompt)
         if self.image != None:
-            self.model_name = 'gemini-pro-vision'
+            self.model_name = 'gemini-pro-vision'        
+            content.append(self.image)
 
-        if self.prompt or self.image:
+        if len(content) > 0:
             model = genai.GenerativeModel(self.model_name)
-            response = model.generate_content([self.prompt,self.image],stream=True)
+            response = model.generate_content(content,stream=True)
             response.resolve()
-            my_json = self.to_markdown(response.text)
-            airesp= json.dumps(my_json)
-            
-            return airesp
+            # my_json = self.to_markdown(response.text)
+            # airesp= json.dumps(my_json)
+            return response.text
         
     def to_markdown(self,text):
             text = text.replace('•', '  *')
