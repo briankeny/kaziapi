@@ -9,6 +9,7 @@ from django.core.mail import send_mail
 from django.template.loader import render_to_string
 from django.utils.html import strip_tags
 from django.conf import settings
+from sms.talk import SMS
 
 # Function For Sending Email Notifications
 def send_email(subject, template, recipient_list, context):
@@ -42,6 +43,15 @@ def password_reset_token_created(sender, instance, reset_password_token, *args, 
     link = f'{settings.API_DOMAIN}/password-reset/?token={unique_token}'
     context = {'full_name': instance.full_name, 'reset_link':link}
 
+    if instance.mobile_verified:
+        try:
+            mobi_number = str(instance.mobile_number)
+            message = f' Hi {instance.full_name}, \n Please use this code to reset your password {reset_password_token}. If you did not send this ignore. \n Regards  @KaziMtaani' 
+            sms = SMS(recipients=[mobi_number],message=message)
+            sms.send()
+        except Exception as e:
+            pass
+
     # Send Password Reset Link To Email
     if instance.email_verified:
         send_email(subject, template, recipient_list, context)
@@ -51,10 +61,10 @@ def create_Password_Reset_Token(instance, reset_password_token):
     tkn = str(reset_password_token)
     hashed_Code = make_password(tkn)
     try:
-        User = User.objects.get(user_id=instance.user_id)
+        user = User.objects.get(user_id=instance.user_id)
         # Create the PasswordResetToken instance
         passwordResetToken = PasswordResetToken(
-            user_id=User,
+            user_id=user,
             code=hashed_Code
         )
         passwordResetToken.save()

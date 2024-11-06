@@ -1,8 +1,10 @@
+import json
+import random
 import re
 from django.db.models.signals import post_save
 from django.db.models.signals import pre_save
 from users.models import User,UserSkill,UserInfo
-from jobs.models import JobPost,JobApplication,Job
+from jobs.models import JobPost,JobApplication,Job,UserJobPostInteraction
 from django.dispatch import receiver,Signal
 from kaziai.ai import AI
 from notifications.signals import save_Notification
@@ -22,18 +24,18 @@ def update_applicant_score(sender,instance,created,**kwargs):
             
             job_info = {
                 'title' : jobpost.title,
-                'description' :job_desc[:150],
+                'description' :job_desc[:100],
                 'employment_type' :jobpost.employment_type,
                 'experience_level' :jobpost.experience_level,
                 'location':jobpost.location
             }
 
             # Get the required job skills  
-            category = jobpost.category.job_id
+            category = jobpost.category
 
             jobskills=[]
             if category :
-                job = Job.objects.filter(job_id=category).values('job_skills')
+                job = Job.objects.filter(job_id=category.job_id).values('job_skills')
                 jobskills.extend(list(job))
 
             # Get Applicant profile
@@ -55,49 +57,43 @@ def update_applicant_score(sender,instance,created,**kwargs):
             userskills = list(userskills.values('skill_name'))
 
             #Create text prompt to gemini to calculate the score 
-            prompt = f"""
-            Between 1 to 100 give a score for this blue collar job seeker based on the given profile. Be Very strict
-            user = {personal_info}
-            userskills = {userskills}
-            other  details = {additional_user_data}
-            Job Profile Being Applied and required skills 
-            job = {job_info}
-            jobskills = {jobskills}
-
-            Return response in this manner since the response is an input to another python program. No extra words my
-            program will look for startscore and endscore then split the two and take the score. Also provide a reason in under  100 words
-
-            candidate_score = "startscore  (#Give a score value between 0-100 )  endscore"           
-            reason = "#Give reason in a string in under 100 characters"
-            """
+            prompt = "Intructions: Award a score to a blue collar job applicant between 1 to 100 depending on their profile. Compare the applicant skills,bio, profession with the job profile"
+            prompt +=f"\n userdetails: {personal_info} , userskills: {userskills} other user info  {additional_user_data}"
+            prompt +=f"\n jobdetails: {job_info} , requiredjobskills: {jobskills}"
+            prompt +="\n Respond with format, a python dictionary object for easy formating   { 'score': 'userscore' , 'reason' : 'Give a brief reason' } "
 
             ai_class = AI(prompt=prompt)
             ai_resp = ai_class.generateAIresponse() 
-
-            def  format_airesp_find_score(text=''):
-                score = 10
-                try:
-                    # Extract the score using regex to handle whitespace and format
-                    # Search for the score in the format of 'startscore <score> endscore'
-                    match = re.search(r'startscore\s+(\d+)\s+endscore', text)
-                    if match:
-                        score = int(match.group(1))  # Convert the captured score to an integer
-                        return score  # Output: 23
-                    else:
-                        return 5
-                except Exception as e:
-                    return score
+            
+            def extract_json(response_string):
+                # Use regex to find the JSON object within triple backticks
+                match = re.search(r'```json\s*({.*?})\s*```', response_string, re.DOTALL)
+                if match:
+                    json_str = match.group(1)  # Extract JSON content
+                    try:
+                        # Convert the JSON string into a dictionary
+                        json_data = json.loads(json_str)
+                        return json_data
+                    except json.JSONDecodeError:
+                        score = random.choice([0,5,15,30])
+                        return {'score' :score}
+                else:
+                    score = random.randint(5,40)
+                    return {'score' :score}
+             
+            json_data = extract_json(ai_resp)
             
             print(f'AI RESPONDED WITH {ai_resp}')
-                
-
             if (ai_resp):
                 application = JobApplication.objects.get(jobpost=instance.jobpost.post_id,applicant=user.user_id)
-                score = format_airesp_find_score(str(ai_resp))
+                score = json_data.get('score',8)
                 application.score = score
                 application.status = 'reviewed'
                 application.save()
-
+                
+                interaction, _ = UserJobPostInteraction.objects.get_or_create(jobpost=instance.jobpost,user=user)
+                print('Recorded')
+    
         except Exception as e:
             print('Found Error',e)
             pass

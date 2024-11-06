@@ -5,9 +5,9 @@ from .models import User, UserSkill,UserInfo,ProfileVisit,SearchAppearance
 @admin.register(User)
 class CustomUserAdmin(UserAdmin):
     model = User
-    list_display = ('email','mobile_number', 'username','verification_badge','location','longitude','latitude', 'full_name', 'account_type', 'is_staff','date_updated')
+    list_display = ('user_id','email','mobile_number', 'username','verification_badge','location','longitude','latitude', 'full_name', 'account_type', 'is_staff','date_updated')
     list_filter = ('account_type', 'is_staff', 'is_superuser', 'is_active','verification_badge')
-    search_fields = ('email','mobile_number', 'username', 'full_name')
+    search_fields = ('email','user_id','mobile_number', 'username', 'full_name')
     fieldsets = (
         (None, {'fields': ('username', 'email', 'password')}),
         ('Personal Info', {'fields': ('full_name', 'bio', 'profile_picture', 'mobile_number', 'location','longitude','latitude')}),

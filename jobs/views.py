@@ -113,15 +113,7 @@ class JobPostDetail(generics.RetrieveUpdateDestroyAPIView):
     queryset = JobPost.objects.all()
     serializer_class = JobPostSerializer
 
-    # def get(self, request, pk):
-    #     user=self.request.user
-    #     job_post = self.get_object()
-    #     # Increment impressions 
-    #     if user.user_id != job_post.recruiter.user_id: 
-    #         job_post.increment_impressions()  
-    #     serializer = self.serializer_class(job_post)
-    #     return Response(serializer.data, status=status.HTTP_200_OK)
-    
+
     def patch(self, request, *args, **kwargs):
          user = self.request.user
          object = self.get_object()
@@ -250,9 +242,11 @@ class JobApplicationDetail(generics.RetrieveUpdateDestroyAPIView):
     def patch(self, request, *args, **kwargs):
          user = self.request.user
          object = self.get_object()
-
+         
          if user.account_type != 'recruiter' and user.user_id != object.jobpost.recruiter.user_id:
               return Response({'This Action is not permitted'},status=status.HTTP_403_FORBIDDEN)
+         
+         UserJobPostInteraction.objects.get_or_create(jobpost=object.post_id,user=user.user_id)
          
          serializer = self.get_serializer(object, data=request.data, partial=True)
          serializer.is_valid(raise_exception=True)
@@ -324,6 +318,7 @@ class ReviewCreate(generics.CreateAPIView):
         data = request.data.copy()
         data['reveiwer'] = user.user_id
         serializer = self.get_serializer(data=data)
+        
         # Check if serializer data is valid
         serializer.is_valid(raise_exception=True)
         self.perform_create(serializer)

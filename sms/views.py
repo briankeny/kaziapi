@@ -163,3 +163,28 @@ class KaziUSSDView(generics.ListCreateAPIView):
         message = kaziussd.switchAction()
 
         return HttpResponse(message)
+    
+
+
+
+@method_decorator(csrf_exempt, name='dispatch')
+class KaziCallBackView(generics.CreateAPIView):
+    permission_classes = (AllowAny,)
+    serializer_class = USSDRequestSerializer
+    
+    def create(self, request, *args, **kwargs):
+        data = request.data.copy()
+        print(f'Getting Request {data}')
+        # phoneNumber = data.get('phoneNumber',None) 
+        # text = data.get('text','')
+        # sessionId = data.get('sessionId',None)
+        # serviceCode  = data.get('serviceCode',None)
+        
+        # print(f'{phoneNumber} {sessionId} {text} {serviceCode}')
+
+        # sender =  self.__class__
+
+        # kaziussd = KaziUSSDActions(phoneNumber=phoneNumber,text=text,sender=sender)
+        # message = kaziussd.switchAction()
+
+        return HttpResponse('Application Received', status=status.HTTP_200_OK)

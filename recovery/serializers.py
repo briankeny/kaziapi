@@ -13,4 +13,4 @@ class ResetPasswordSerializer(serializers.ModelSerializer):
     new_password = serializers.CharField(required=True)
     class Meta:
         model = PasswordResetToken 
-        fields = ['code', 'user_id', 'new_password']
+        fields = ['code', 'mobile_number', 'new_password']

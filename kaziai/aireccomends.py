@@ -21,6 +21,8 @@ class JobRecommendation:
             shape=(1, len(JobPost.objects.all()))  # One row for the current user
         )
 
+        
+
         # Calculate user similarities
         user_similarities = cosine_similarity(user_job_matrix)
 

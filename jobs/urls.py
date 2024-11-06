@@ -12,6 +12,8 @@ urlpatterns = [
 
     path('analytics/', views.AnalyticsList.as_view(), name='analytics-detail'),
 
+    path('user-jobpost-interaction/', views.UserJobPostInteractionCreateView.as_view(), name='interaction-detail'),
+
     path('job-application-create/',views.JobApplicationCreate.as_view(), name='job-application-create'),
     path('job-applications/',views.JobApplicationList.as_view(), name='job-application-list'),
     path('job-applications-user/',views.JobApplicationUserList.as_view(), name='job-app-user-list'),
@@ -19,5 +21,7 @@ urlpatterns = [
      path('reviews/', views.ReviewList.as_view(), name='reviews-list'),
     path('reviews-create/', views.ReviewCreate.as_view(), name='review-create'),
     path('review/<int:pk>/',views.ReviewDetail.as_view(), name='review-detail'),
+
+
 ]
 

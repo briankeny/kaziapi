@@ -16,16 +16,14 @@ from django.contrib.auth.hashers import check_password
 #  For Users that have Forgotten their Passwords
 class CustomResetPasswordRequestToken(generics.CreateAPIView):
     def post(self, request, *args, **kwargs):
-        email = request.data.get('user_id')  
-        if not email:
+        mobi = request.data.get('mobile_number')  
+        if not mobi:
             return Response({'error': 'User Identification is required.'}, status=status.HTTP_400_BAD_REQUEST)
         try:
-            User = User.objects.get(email=email)
-        except User.DoesNotExist:
+            phone = str(mobi)
+            user = User.objects.get(mobile_number=phone)
+        except Exception as e:
             return Response({'error': 'You are not authorized to perform this operation'}, status=status.HTTP_400_BAD_REQUEST)
-        except ValueError:
-            # Hide Information About The Non-Existence of this user
-            Response({'error': 'User does not exist'}, status=status.HTTP_400_BAD_REQUEST)
         
         # Generate the password reset token
         def codeGen():
@@ -35,8 +33,8 @@ class CustomResetPasswordRequestToken(generics.CreateAPIView):
         reset_password_token = codeGen() 
 
         # Trigger the signal to send the password reset email
-        reset_password_token_created.send(sender=self.__class__, instance=User, reset_password_token=reset_password_token)
-        return Response({'success': 'Password Reset Code has been sent to your email.'}, status=status.HTTP_200_OK)
+        reset_password_token_created.send(sender=self.__class__, instance=user, reset_password_token=reset_password_token)
+        return Response({'success': 'Password Reset Code has been sent to your phone number and email.'}, status=status.HTTP_200_OK)
 
 
 # This view handles verification of Password Reset Confirmation Code.    
@@ -53,15 +51,14 @@ class VerifyCodeView(generics.CreateAPIView):
         serializer = self.get_serializer(data=request.data)
         serializer.is_valid(raise_exception=True)
         code = serializer.validated_data['code']
-        user_id = serializer.validated_data['user_id']
+        user_id = serializer.validated_data['mobile_number']
         
         try:
-            User = User.objects.get(email=user_id) or None
-            if User.user_id:
-                password_reset_token = PasswordResetToken.objects.get(user_id=User.user_id)
+            user = User.objects.get(email=user_id) or None
+            if user.user_id:
+                password_reset_token = PasswordResetToken.objects.get(user_id=user.user_id)
             else:
                 raise ValidationError
-            
         except Exception as e:
             return Response({'message': 'Invalid Credentials.'}, status=status.HTTP_400_BAD_REQUEST)
         try:
@@ -69,6 +66,7 @@ class VerifyCodeView(generics.CreateAPIView):
             is_code_valid = check_password(cd,password_reset_token.code)
         except Exception as e:
             pass
+      
         if is_code_valid:
             return Response({'message': 'Verification Code is valid.'}, status=status.HTTP_200_OK)
         else:
@@ -85,11 +83,11 @@ class ResetUserPassword(generics.CreateAPIView):
         
         #Get The Mandatory fields From the Validated Data 
         code = serializer.validated_data['code']
-        user_id = serializer.validated_data['user_id']
+        user_id = serializer.validated_data['mobile_number']
         try:
-            user = User.objects.get(email=user_id) or None
+            user = User.objects.get(mobile_number=user_id) or None
             if user.user_id:
-                password_reset_token = PasswordResetToken.objects.get(user_id=User.user_id)
+                password_reset_token = PasswordResetToken.objects.get(user_id=user.user_id)
             else:
                 raise ValidationError
             
@@ -102,21 +100,13 @@ class ResetUserPassword(generics.CreateAPIView):
             is_code_valid = check_password(cd,password_reset_token.code)
         except Exception as e:
             pass
-        if is_code_valid:
-            # Check if the correct code has not yet Expired then Proceed to change Password
-            if is_code_valid and password_reset_token.date_of_expiry > timezone.now():
-                try:
-                    psn = request.data.pop('user_id')
-                    user = User.objects.get(public_service_no=psn)
-                    # Change the password
-                    new_password = serializer.validated_data['new_password']
-                    user.set_password(new_password)
-                    user.save()    
-                    return Response({'message': 'Password was changed successfully.'}, status=status.HTTP_200_OK)
-                except User.DoesNotExist:
-                    return Response({'message': 'User not found.'}, status=status.HTTP_404_NOT_FOUND)
-            else:
-                 return Response({'message': 'Verification Code Has Expired.'}, status=status.HTTP_401_UNAUTHORIZED)
+        
+        # Check if the correct code has not yet Expired then Proceed to change Password
+        if is_code_valid and password_reset_token.date_of_expiry > timezone.now():
+            # Change the password
+            new_password = serializer.validated_data['new_password']
+            user.set_password(new_password)
+            user.save()    
+            return Response({'message': 'Verification Code Has Expired.'}, status=status.HTTP_401_UNAUTHORIZED)
         else:
              return Response({'message': 'Unauthorized.'}, status=status.HTTP_401_UNAUTHORIZED)    
-

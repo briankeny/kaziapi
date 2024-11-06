@@ -64,7 +64,7 @@ def send_welcome_message(sender, instance, created, **kwargs):
 def send_Job_Post_notification(sender,instance,created,**kwargs): 
     if created:
         notification_category = "jobpost"
-        action= f'/job-post/{instance.post_id}/'
+        action= f'{instance.post_id}'
         message = f"{instance.description[:200]}" 
         subject = f"New Job - {instance.title[:50]}"
         

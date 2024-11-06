@@ -46,7 +46,7 @@ class JobPost(models.Model):
     employment_type = models.CharField(max_length=20,default='full time', choices=EMPLOYMENT_CHOICES)
     experience_level = models.CharField(max_length=20, default='None',choices=EXPERIENCE_CHOICES)
     salary_range = models.CharField(max_length=50, null=True, blank=True)
-    recruiter = models.ForeignKey(User, on_delete=models.CASCADE, related_name='post_by')
+    recruiter = models.ForeignKey(User, on_delete=models.CASCADE, related_name='jobpost_recruiter')
     impressions = models.IntegerField(default=0)
     status = models.CharField(max_length=20, default='open', choices=STATUS_CHOICES)
     deadline_date = models.DateTimeField(default=timezone.now() + timezone.timedelta(minutes=3600))
