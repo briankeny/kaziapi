@@ -38,6 +38,8 @@ class User(AbstractUser, PermissionsMixin):
     verification_badge = models.CharField(max_length=100, null=True,default=None,choices=BADGES)
     device_token = models.CharField(max_length=100,default=None, null=True,blank = True)
     date_updated = models.DateTimeField(default=timezone.now)
+    longitude = models.FloatField(default=-1.21999)
+    latitude = models.FloatField(default=38.00899)
    
     def __str__(self):
         return f"{self.user_id} - {self.full_name}"   

@@ -81,7 +81,6 @@ class JobPostList(generics.ListAPIView):
     def get_queryset(self):
         user = self.request.user
         queryset  = JobPost.objects.all()
-
         # Optional search term filtering
         recruiter = self.request.query_params.get('recruiter','empty')
 
@@ -91,7 +90,7 @@ class JobPostList(generics.ListAPIView):
                 queryset= JobPost.objects.filter(recruiter=id)     
             except Exception as e:
                 queryset = JobPost.objects.none()
-
+            return queryset
         else:
             queryset = queryset.order_by('date_posted')          
             search_term = str(self.request.query_params.get('searchTerm', None))
@@ -106,7 +105,7 @@ class JobPostList(generics.ListAPIView):
             # Increment impressions for each post in the queryset
             queryset.update(impressions=F('impressions') + 1)
             # Sort order based on newer ones        
-        return queryset
+            return queryset
     
 class JobPostDetail(generics.RetrieveUpdateDestroyAPIView):
     authentication_classes = [JWTAuthentication]
@@ -283,6 +282,16 @@ class ReviewList(generics.ListAPIView):
     def get_queryset(self):
         user = self.request.user
         queryset  = Review.objects.all()
+        reviewer = self.request.query_params.get('reveiwer','empty')
+
+        if reviewer != 'empty':
+            try:
+                id = int(reviewer)
+                queryset = queryset.filter(reveiwer=id)
+            except Exception as e:
+                queryset = []
+            return queryset
+       
         # Optional search term filtering
         search_term = str(self.request.query_params.get('searchTerm', None))
         search = str(self.request.query_params.get('search', None))

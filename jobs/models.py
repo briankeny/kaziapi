@@ -52,6 +52,8 @@ class JobPost(models.Model):
     deadline_date = models.DateTimeField(default=timezone.now() + timezone.timedelta(minutes=3600))
     date_posted = models.DateTimeField(auto_now_add=True)
     is_read_only = models.BooleanField(default=False)
+    longitude = models.FloatField(default=-1.21999)
+    latitude = models.FloatField(default=38.00899)
 
     def increment_impressions(self):
         self.impressions += 1

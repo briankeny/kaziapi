@@ -9,7 +9,7 @@ class JobAdmin(admin.ModelAdmin):
 
 @admin.register(JobPost)
 class JobPostAdmin(admin.ModelAdmin):
-    list_display = ('post_id', 'title','job_picture', 'location', 'employment_type', 
+    list_display = ('post_id', 'title','job_picture', 'location', 'employment_type', 'longitude','latitude',
                     'experience_level', 'salary_range', 'status', 'date_posted')
     list_filter = ('employment_type', 'experience_level', 'status')  # Filters on the right sidebar
     search_fields = ('title', 'location', 'recruiter__full_name')  # Search fields in admin

@@ -5,6 +5,8 @@ from .serializers import MessageSerializer, ChatSerializer,ChatWithParticipantsS
 from rest_framework_simplejwt.authentication import  JWTAuthentication
 from rest_framework.pagination import LimitOffsetPagination
 from rest_framework.response import Response
+from django.db.models import Q
+from rest_framework.parsers import MultiPartParser
 
 class ChatList(generics.ListAPIView):
     authentication_classes = [JWTAuthentication]
@@ -42,10 +44,43 @@ class MessageCreate(generics.CreateAPIView):
     authentication_classes = [JWTAuthentication]
     serializer_class = MessageSerializer
     permission_classes = [permissions.IsAuthenticated]
+    parser_classes=(MultiPartParser,)
+    
 
     # Create
     def create(self, request, *args, **kwargs):
-        return super().create(request, *args, **kwargs)
+        user = self.request.user
+        data = request.data.copy()
+        receiver = data.get('receiver',None)
+
+        if receiver == None:
+            return Response({'error':'Missing Credentials'},status=status.HTTP_400_BAD_REQUEST)
+        
+       # Check if a chat with these participants already exists
+        chat = Chat.objects.filter(Q(participants=user.user_id) & Q(participants=receiver.user_id)).first()
+
+        # If no existing chat, create a new one
+        if not chat:
+            chat = Chat.objects.create()
+            chat.participants.add(user, receiver)
+            chat.save()
+            created = True
+        else:
+            created = False
+
+        print(f'Created or found chat {chat} {created}')
+
+        data['sender'] = user.user_id
+        data['conversation'] = chat.chat_id
+        
+        #serialize data 
+        serializer = self.get_serializer(data=data, partial=True)
+
+        # Check if serializer data is valid
+        serializer.is_valid(raise_exception=True)
+        self.perform_create(serializer)
+        
+        return Response(serializer.data,status=status.HTTP_201_CREATED)
 
 class MessageDetail(generics.RetrieveUpdateDestroyAPIView):
     authentication_classes = [JWTAuthentication]

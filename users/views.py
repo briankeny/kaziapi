@@ -95,7 +95,7 @@ class UserListView(generics.ListAPIView):
     def get_queryset(self):
         queryset = User.objects.all()
         # Optional search term filtering
-        ordering = str(self.request.query_params.get('ordering','user_id'))
+        # ordering = str(self.request.query_params.get('ordering','user_id'))
         search_term = str(self.request.query_params.get('searchTerm','empty'))
         search = str(self.request.query_params.get('search','empty'))
 
@@ -115,11 +115,6 @@ class UserListView(generics.ListAPIView):
                 # Ensures the updated count is retrieved immediately
                 search_appearance.refresh_from_db()  
 
-        if ordering:
-            try:
-                queryset = queryset.order_by(ordering)
-            except Exception as e:
-                queryset = User.objects.none()
         return queryset
 
 class UserDetail(generics.RetrieveUpdateDestroyAPIView):
@@ -130,12 +125,12 @@ class UserDetail(generics.RetrieveUpdateDestroyAPIView):
     serializer_class = UserSerializer
     queryset = User.objects.all()
 
-    def get_queryset(self):
-        user = self.request.user
-        queryset = User.objects.all() 
-        queryset = queryset.filter(user_id = user.user_id) 
+    # def get_queryset(self):
+    #     user = self.request.user
+    #     queryset = User.objects.all() 
+    #     queryset = queryset.filter(user_id = user.user_id) 
         
-        return queryset
+    #     return queryset
      
     def put(self, request, *args, **kwargs):
         return Response({"message":"Unsupported Request or Method not Allowed"},
