@@ -19,9 +19,10 @@ def  update_Chat(sender, instance, created, **kwargs):
             content += instance.content
         
         try:
-            convo = Chat.objects.get(chat_id=instance.chat_id)
+            convo = Chat.objects.get(chat_id=instance.conversation.chat_id)
             if content:
-                convo.latest_message  = content[:200]
+                convo.latest_message  = content[:100]
                 convo.save()
         except Exception as e:
+            print(f'Error for chat signal {e}')
             pass

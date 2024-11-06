@@ -7,6 +7,7 @@ from rest_framework.pagination import LimitOffsetPagination
 from rest_framework.response import Response
 from django.db.models import Q
 from rest_framework.parsers import MultiPartParser
+from users.models import User
 
 class ChatList(generics.ListAPIView):
     authentication_classes = [JWTAuthentication]
@@ -36,9 +37,8 @@ class MessageList(generics.ListAPIView):
 
     def get_queryset(self):
         chat_id = self.kwargs['pk']
-        Chat = get_object_or_404(Chat, pk=chat_id)
-        return Message.objects.filter(Chat=Chat)
-
+        chat = get_object_or_404(Chat, pk=chat_id)
+        return Message.objects.filter(conversation=chat)
 
 class MessageCreate(generics.CreateAPIView):
     authentication_classes = [JWTAuthentication]
@@ -56,23 +56,29 @@ class MessageCreate(generics.CreateAPIView):
         if receiver == None:
             return Response({'error':'Missing Credentials'},status=status.HTTP_400_BAD_REQUEST)
         
+        try:
+            id= int(receiver)
+            receiver = User.objects.get(user_id=id)
+        except Exception as e:
+            return Response({'error':'Missing Credentials'},status=status.HTTP_400_BAD_REQUEST)
+
+        if receiver.user_id == user.user_id:
+            return Response({'error':'You cannot send a message to yourself'},status=status.HTTP_400_BAD_REQUEST)
+    
        # Check if a chat with these participants already exists
-        chat = Chat.objects.filter(Q(participants=user.user_id) & Q(participants=receiver.user_id)).first()
+        participants = [receiver.user_id,user.user_id]
+        chat = Chat.objects.filter(participants__in=participants).first()
+        print(f'CHat is {chat.chat_id} ')
 
         # If no existing chat, create a new one
         if not chat:
             chat = Chat.objects.create()
             chat.participants.add(user, receiver)
             chat.save()
-            created = True
-        else:
-            created = False
-
-        print(f'Created or found chat {chat} {created}')
 
         data['sender'] = user.user_id
         data['conversation'] = chat.chat_id
-        
+
         #serialize data 
         serializer = self.get_serializer(data=data, partial=True)
 
