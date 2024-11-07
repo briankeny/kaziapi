@@ -1,5 +1,5 @@
 from django.contrib import admin
-from .models import Job, JobPost, JobApplication, Review
+from .models import Job, JobPost, JobApplication, Review,UserJobPostInteraction
 
 # Register your models here.
 
@@ -25,3 +25,13 @@ class ReviewAdmin(admin.ModelAdmin):
     list_display = ('review_id', 'reveiwer', 'rating', 'date_posted')
     list_filter = ('rating',)
     search_fields = ('reveiwer__full_name', 'User__user_id')
+
+
+# Optionally, create a custom admin class for additional customization
+class UserJobPostInteractionAdmin(admin.ModelAdmin):
+    list_display = ('jobpost', 'user')  # Display the job post and user in the list view
+    list_filter = ('jobpost', 'user')   # Add filters for job posts and users
+    search_fields = ('jobpost__title', 'user__full_name')  # Allow searching by job title and username
+
+# Register the model and optional custom admin
+admin.site.register(UserJobPostInteraction, UserJobPostInteractionAdmin)

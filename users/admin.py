@@ -44,6 +44,8 @@ class UserSkillAdmin(admin.ModelAdmin):
     list_display = ('user', 'skill_name')
     search_fields = ('user__username', 'skill_name')
 
+
+
 admin.site.register(UserSkill, UserSkillAdmin)
 admin.site.register(UserInfo, UserInfoAdmin)
 admin.site.register(ProfileVisit, ProfileVisitAdmin)

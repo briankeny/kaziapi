@@ -270,10 +270,23 @@ class ProfileVisitListCreateView(generics.ListCreateAPIView):
     serializer_class = ProfileVisitSerializer
     permission_classes = [IsAuthenticated]
 
-    def perform_create(self, serializer):
-        user = self.request.user
-        visitor = serializer.validated_data.get('visitor')
-        if user != visitor:
-            serializer.save(user=user)  # Track visitor as the requesting user
-        else:
-            raise ValidationError("A user cannot visit their own profile.")
+    def create(self, request, *args, **kwargs):
+        me = self.request.user
+        data = request.data.copy()
+        visitor = request.data.get('visitor',None)
+        user = request.data.get('user', None)
+        
+        if visitor is None or user is None:
+            return Response({'message':'ok'}, status=status.HTTP_200_OK)
+        if   visitor == user:
+            return Response({'message':'ok'}, status=status.HTTP_200_OK)
+
+        data['user'] =  user
+        data['visitor'] = me.user_id
+
+        #Serialize the data
+        serializer = self.get_serializer(data=data)
+        serializer.is_valid(raise_exception=True)
+        self.perform_create(serializer)
+        return Response(serializer.data, status=status.HTTP_200_OK)
+        

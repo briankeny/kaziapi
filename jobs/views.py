@@ -11,6 +11,8 @@ from rest_framework.response import Response
 from users.models import ProfileVisit,SearchAppearance
 from rest_framework.parsers import MultiPartParser
 from jobs.signals import close_job_post_applications
+from kaziai.aireccomends import JobRecommendation
+
 
 # Create Job Views
 class JobList(generics.ListAPIView):
@@ -83,8 +85,15 @@ class JobPostList(generics.ListAPIView):
         queryset  = JobPost.objects.all()
         # Optional search term filtering
         recruiter = self.request.query_params.get('recruiter','empty')
+        reccommend =   self.request.query_params.get('reccommend','empty')
 
-        if recruiter != 'empty':
+        if reccommend != 'empty' and user.account_type == 'jobseeker':
+             queryset = queryset.filter(is_read_only=False)
+             recommendation_system = JobRecommendation(user_id=user.user_id)
+             recommended_jobs = recommendation_system.recommend(top_n=5)
+             return recommended_jobs
+        
+        elif recruiter != 'empty':
             try:
                 id= int(recruiter)
                 queryset= JobPost.objects.filter(recruiter=id)     
@@ -92,6 +101,7 @@ class JobPostList(generics.ListAPIView):
                 queryset = JobPost.objects.none()
             return queryset
         else:
+            queryset = queryset.filter(is_read_only=False)
             queryset = queryset.order_by('date_posted')          
             search_term = str(self.request.query_params.get('searchTerm', None))
             search = str(self.request.query_params.get('search', None))
@@ -215,6 +225,7 @@ class JobApplicationUserList(generics.ListAPIView):
                 queryset=[]
             return  queryset
         else:
+    
             search_term = str(self.request.query_params.get('searchTerm', None))
             search = str(self.request.query_params.get('search', None))
                 # Sort order based on newer ones        

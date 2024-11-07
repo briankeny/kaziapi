@@ -28,6 +28,15 @@ class ChatDetail(generics.RetrieveUpdateDestroyAPIView):
     serializer_class = ChatSerializer
     permission_classes = [permissions.IsAuthenticated]
 
+    # Accept Delete Method
+    def delete(self, request, *args, **kwargs):
+        # user = self.request.user
+        chat = self.get_object()
+        chat.delete()
+        #Delete was successful return response
+        return Response({}, status=status.HTTP_204_NO_CONTENT)
+    
+
 class MessageList(generics.ListAPIView):
     authentication_classes = [JWTAuthentication]
     serializer_class = MessageSerializer
@@ -36,6 +45,7 @@ class MessageList(generics.ListAPIView):
     pagination_class = LimitOffsetPagination 
 
     def get_queryset(self):
+        user = self.request.user
         chat_id = self.kwargs['pk']
         chat = get_object_or_404(Chat, pk=chat_id)
         return Message.objects.filter(conversation=chat)
@@ -52,7 +62,7 @@ class MessageCreate(generics.CreateAPIView):
         user = self.request.user
         data = request.data.copy()
         receiver = data.get('receiver',None)
-
+    
         if receiver == None:
             return Response({'error':'Missing Credentials'},status=status.HTTP_400_BAD_REQUEST)
         
@@ -66,23 +76,32 @@ class MessageCreate(generics.CreateAPIView):
             return Response({'error':'You cannot send a message to yourself'},status=status.HTTP_400_BAD_REQUEST)
     
        # Check if a chat with these participants already exists
-        participants = [receiver.user_id,user.user_id]
-        chat = Chat.objects.filter(participants__in=participants).first()
-        print(f'CHat is {chat.chat_id} ')
+        userchats = Chat.objects.filter(participants__in=[user.user_id]).values('participants', 'chat_id')
+        receiverchats = Chat.objects.filter(participants__in=[receiver.user_id]).values('participants', 'chat_id')
 
-        # If no existing chat, create a new one
-        if not chat:
+        userchatsid = [ item["chat_id"] for item in  list(userchats)]
+        receiverchatsids = [ item["chat_id"] for item in  list(receiverchats)]
+        found_chat = None
+
+        # Loop through each chat find item
+        for id in userchatsid :
+            if id in receiverchatsids:
+                found_chat = id
+        
+        # # If no existing chat, create a new one
+        if  found_chat is None:
             chat = Chat.objects.create()
-            chat.participants.add(user, receiver)
+            chat.participants.add(user,receiver)
             chat.save()
-
+            found_chat = chat.chat_id
+    
         data['sender'] = user.user_id
-        data['conversation'] = chat.chat_id
+        data['conversation'] = found_chat
 
-        #serialize data 
+        # #serialize data 
         serializer = self.get_serializer(data=data, partial=True)
 
-        # Check if serializer data is valid
+        # # Check if serializer data is valid
         serializer.is_valid(raise_exception=True)
         self.perform_create(serializer)
         
@@ -118,5 +137,4 @@ class MessageDetail(generics.RetrieveUpdateDestroyAPIView):
         #Delete was successful return response
         return Response({}, status=status.HTTP_204_NO_CONTENT)
         
-    
     
