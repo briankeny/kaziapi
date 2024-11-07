@@ -43,7 +43,7 @@ class KaziUSSDMessages:
         self.message = f"""END 
         Hi {self.username},
         You will receive an sms shortly with jobs matching your profession.
-        Please reply with a job number of your choice to 30508 starting with #APPLYJOB.
+        Please reply with a job number of your choice to 30508 starting with #APPLY.
         Thank You!
         """
         return self.message
@@ -90,9 +90,7 @@ class KaziUSSDActions(KaziUSSDMessages):
         elif self.text == '2':
             # Check if a user has an existing account
             try:
-
                 user = User.objects.get(mobile_number=self.phoneNumber)
-                print(f'found user {user.full_name}')
                 if user:
                     uname= user.full_name
                     self.username = uname[:15]

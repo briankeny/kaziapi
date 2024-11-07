@@ -2,7 +2,7 @@ from django.db.models.signals import post_save
 from django.db.models.signals import pre_save
 from users.models import User
 from .models import Notification
-from jobs.models import JobPost
+from jobs.models import JobPost,JobApplication,Review
 from django.dispatch import receiver
 from django.core.mail import send_mail  
 from django.conf import settings
@@ -64,13 +64,51 @@ def send_welcome_message(sender, instance, created, **kwargs):
 @receiver(post_save, sender=JobPost)
 def send_Job_Post_notification(sender,instance,created,**kwargs): 
     if created:
-        notification_category = "jobpost"
-        action= f'{instance.post_id}'
-        message = f"{instance.description[:200]}" 
-        subject = f"New Job - {instance.title[:50]}"
-        
-        recipients = User.objects.filter(account_type='jobseeker')
+        try:
+            notification_category = "jobpost"
+            action= f'{instance.post_id}'
+            message = f"{instance.description[:200]}" 
+            subject = f"New Job - {instance.title[:50]}"
+            
+            recipients = User.objects.filter(account_type='jobseeker')
 
-        if len(recipients) >0 :
-            for recipient in recipients:
-                save_Notification(subject,message,notification_category,recipient,action)
+            if len(recipients) >0 :
+                for recipient in recipients:
+                    if instance.category:
+                        job_name = instance.category.job_name
+                        if str(recipient.industry).lower() in  str(job_name).lower():
+                            save_Notification(subject,message,notification_category,recipient,action)
+        except Exception as e:
+            pass
+
+
+# Job Application Notification
+@receiver(post_save, sender=JobApplication)
+def send_Job_Application_notification(sender,instance,created,**kwargs): 
+    if created:
+        try:
+            notification_category = "user"
+            action= f'{instance.applicant.user_id}'
+            message = f"{instance.applicant.bio[:100]}" 
+            subject = f"{instance.applicant.full_name} applied for - {instance.jobpost.title}"
+            
+            recipient = instance.jobpost.recruiter
+            save_Notification(subject,message,notification_category,recipient,action)
+        except Exception as e:
+            pass
+
+
+# Job Review Notification
+@receiver(post_save, sender=Review)
+def send_Review_notification(sender,instance,created,**kwargs): 
+    if created:
+        try:
+            notification_category = "user"
+            action= f'{instance.reveiwer.user_id}'
+            message = f"{instance.review_text[:200]}" 
+            subject = f"{instance.reveiwer.full_name} reviewed - {instance.jobpost.title}"
+            recipient = instance.jobpost.recruiter
+    
+            save_Notification(subject,message,notification_category,recipient,action)
+        except Exception as e:
+            pass

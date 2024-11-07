@@ -18,6 +18,7 @@ from .serializers import OtpSmsTokenSerializer,USSDRequestSerializer
 from .talk import SMS
 from users.models import User
 from .ussd import KaziUSSDActions
+from .offline import Offline
 
 
 #Create Phone OTP using POST method and Push OTP Code to mobile using Africastalking API sms service  
@@ -174,17 +175,14 @@ class KaziCallBackView(generics.CreateAPIView):
     
     def create(self, request, *args, **kwargs):
         data = request.data.copy()
-        print(f'Getting Request {data}')
-        # phoneNumber = data.get('phoneNumber',None) 
-        # text = data.get('text','')
-        # sessionId = data.get('sessionId',None)
-        # serviceCode  = data.get('serviceCode',None)
-        
-        # print(f'{phoneNumber} {sessionId} {text} {serviceCode}')
-
-        # sender =  self.__class__
-
-        # kaziussd = KaziUSSDActions(phoneNumber=phoneNumber,text=text,sender=sender)
-        # message = kaziussd.switchAction()
-
-        return HttpResponse('Application Received', status=status.HTTP_200_OK)
+        phoneNumber = data.get('from',None) 
+        text = data.get('text','')
+        # sessionId = data.get('id',None)
+        # serviceCode  = data.get('linkId',None)
+        action = Offline(mobile_number=phoneNumber,text=text)
+        resp =action.actionCenter()
+        print(resp)
+        mobile = str(phoneNumber)
+        sms = SMS(recipients=[mobile],message=resp)
+        sms.send()
+        return HttpResponse({'ok':'success'}, status=status.HTTP_200_OK)

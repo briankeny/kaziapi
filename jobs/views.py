@@ -85,12 +85,13 @@ class JobPostList(generics.ListAPIView):
         queryset  = JobPost.objects.all()
         # Optional search term filtering
         recruiter = self.request.query_params.get('recruiter','empty')
-        reccommend =   self.request.query_params.get('reccommend','empty')
+        reccommend =   self.request.query_params.get('reccommended','empty')
 
         if reccommend != 'empty' and user.account_type == 'jobseeker':
              queryset = queryset.filter(is_read_only=False)
-             recommendation_system = JobRecommendation(user_id=user.user_id)
+             recommendation_system = JobRecommendation(user_id=2)
              recommended_jobs = recommendation_system.recommend(top_n=5)
+             print('Executed here')
              return recommended_jobs
         
         elif recruiter != 'empty':
@@ -256,8 +257,6 @@ class JobApplicationDetail(generics.RetrieveUpdateDestroyAPIView):
          
          if user.account_type != 'recruiter' and user.user_id != object.jobpost.recruiter.user_id:
               return Response({'This Action is not permitted'},status=status.HTTP_403_FORBIDDEN)
-         
-         UserJobPostInteraction.objects.get_or_create(jobpost=object.post_id,user=user.user_id)
          
          serializer = self.get_serializer(object, data=request.data, partial=True)
          serializer.is_valid(raise_exception=True)

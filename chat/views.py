@@ -136,5 +136,3 @@ class MessageDetail(generics.RetrieveUpdateDestroyAPIView):
         message.delete()
         #Delete was successful return response
         return Response({}, status=status.HTTP_204_NO_CONTENT)
-        
-    
