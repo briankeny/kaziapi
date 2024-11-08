@@ -17,6 +17,12 @@ class Offline:
         if user is None:
             return self.rejectMessage
         
+        if user.account_type == 'recruiter':
+            return f"""
+                Hey {user.full_name},
+                Unfortunately, this feature is not currently available to you. 
+                Regards, @KaziMtaani
+                """
      
         if '#apply' in self.text.lower():
             clean_list = self.text.lower().replace('\n','').split('#apply')
@@ -134,6 +140,6 @@ class Offline:
     def rejectMessage(Self):
         return """ 
             Hello ,
-            Please Register an account with KaziMtaani by dialing #334*3050# to use this service.
+            Please Register an account with KaziMtaani by dialing #384*3050# to use this service.
             """
 

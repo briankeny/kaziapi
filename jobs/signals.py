@@ -57,7 +57,7 @@ def update_applicant_score(sender,instance,created,**kwargs):
             userskills = list(userskills.values('skill_name'))
 
             #Create text prompt to gemini to calculate the score 
-            prompt = "Intructions: Award a score to a blue collar job applicant between 1 to 100 depending on their profile. Compare the applicant skills,bio, profession with the job profile"
+            prompt = "Intructions: Award a score to a blue collar job seeker between 1 to 100 depending on their profile. Compare the applicant skills,bio, profession with the job profile"
             prompt +=f"\n userdetails: {personal_info} , userskills: {userskills} other user info  {additional_user_data}"
             prompt +=f"\n jobdetails: {job_info} , requiredjobskills: {jobskills}"
             prompt +="\n Respond with format, a python dictionary object for easy formating   { 'score': 'userscore' , 'reason' : 'Give a brief reason' } "
@@ -76,24 +76,23 @@ def update_applicant_score(sender,instance,created,**kwargs):
                         return json_data
                     except json.JSONDecodeError:
                         score = random.choice([0,5,15,30])
-                        return {'score' :score}
+                        return {'score' :score ,'reason':'Reason not provided'}
                 else:
                     score = random.randint(5,40)
-                    return {'score' :score}
+                    return {'score' :score, 'reason':'Reason not provided'}
              
             json_data = extract_json(ai_resp)
             
-            print(f'AI RESPONDED WITH {ai_resp}')
+            # print(f'AI RESPONDED WITH {ai_resp}')
             if (ai_resp):
                 application = JobApplication.objects.get(jobpost=instance.jobpost.post_id,applicant=user.user_id)
                 score = json_data.get('score',8)
+                reason = json_data.get('reason','')
                 application.score = score
+                application.comments = reason
                 application.status = 'reviewed'
                 application.save()
                 
-                interaction, _ = UserJobPostInteraction.objects.get_or_create(jobpost=instance.jobpost,user=user)
-                print('Recorded')
-    
         except Exception as e:
             print('Found Error',e)
             pass
@@ -124,9 +123,9 @@ def conclude_job_application(sender, instance, *args, **kwargs):
 
             if item.applicant.mobile_verified:
                  mobile_num = str(item.applicant.mobile_number)
-                 print(f'Found mobile {mobile_num}')
                  sms = SMS(recipients=[mobile_num],message=message)
                  sms.send()
 
     except Exception as e:
         print(f'Error concluding job applications: {str(e)}')
+        pass

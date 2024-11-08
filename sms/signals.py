@@ -16,16 +16,12 @@ def send_available_jobs(sender, instance, recepient,*args, **kwargs):
         # Construct the message to send to client
         message = f"Hi {instance.full_name},"
 
-        print(f'Categories {categories.count()}')
         if categories.count() > 0:
             ids = [item["job_id"] for item in list(categories)]
-            print(f'Found ids {ids}')
             j_posts = JobPost.objects.filter(category__in=ids) 
             data = list(j_posts.values('post_id','title'))
-            print(f'Found js {j_posts} \n  list {data}')
             # First five jobs
             jobs = data[:5]
-            print(f'Found jobs {jobs}')
             if len(jobs) > 0:
                 message+=f"\n We found {len(jobs)} jobs that you can apply."
                 for j in jobs:
@@ -40,7 +36,6 @@ def send_available_jobs(sender, instance, recepient,*args, **kwargs):
         sms = SMS(recipients=[recepient],message=message)
         sms.send()
     except Exception as e:
-        print(str(e))
         pass
 
 
@@ -64,5 +59,4 @@ def send_application_sms(sender, instance, recepient,*args, **kwargs):
         sms = SMS(recipients=[recepient],message=message)
         sms.send()
     except Exception as e:
-        print(str(e))
         pass

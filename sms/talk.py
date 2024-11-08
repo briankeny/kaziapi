@@ -23,9 +23,9 @@ class SMS:
             try:
 				# Thats it, hit send and we'll take care of the rest.
                 response = self.sms.send(self.message,self.recipients, sender)
-                print(f'Raw response is {response}')
+                # print(f'Raw response is {response}')
                 return response
             except Exception as e:
-                print ('Encountered an error while sending: %s' % str(e))
+                # print ('Encountered an error while sending: %s' % str(e))
                 return {'ok':False, 'error':str(e)}
 

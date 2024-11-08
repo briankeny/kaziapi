@@ -13,6 +13,7 @@ import chat.urls as chat_urls
 import jobs.urls as jobs_urls
 import recovery.urls as recov_urls
 import sms.urls as smurls
+import kaziai.urls as aiUrls
 
 # import reports.urls as repurls
 # from rest_framework_swagger.views import get_swagger_view
@@ -22,7 +23,7 @@ import sms.urls as smurls
 
 # schema_view = get_schema_view(
 #     openapi.Info(
-#         title="Roads API",
+#         title="kaziapi",
 #         default_version="v1",
 #     ),
 #     public=True,
@@ -34,6 +35,7 @@ urlpatterns = [
     path('', include(notification_urls)),
     path('', include(auth_urls)),
     path('', include(recov_urls)),
+    path('',include(aiUrls)),
     path('', include(smurls)),
     path('', include(user_urls)),
     path('', include(jobs_urls)),

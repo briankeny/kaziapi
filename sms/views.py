@@ -43,8 +43,6 @@ class OtpSmsCreateView(generics.CreateAPIView):
         tkn_str =str(tkn)
         token= make_password(tkn_str)
 
-        print(f'OTP Code is {tkn}')
-
         # send the code
         message = f'Dear Customer your OTP is {tkn}. Use this code to verify your account with Kazi Mtaani'
         convo = SMS( recipients=[phone], message = message)
@@ -130,7 +128,6 @@ class VerifyOTPView(generics.UpdateAPIView):
             return Response({'message':f'Phone number has been verified successfully!'}, status=status.HTTP_200_OK)
 
         except Exception as e:
-            print(f'Found Error {e}')
             return Response({'error':'Invalid credentials'},status=status.HTTP_400_BAD_REQUEST)
                
         
@@ -156,7 +153,7 @@ class KaziUSSDView(generics.ListCreateAPIView):
         sessionId = data.get('sessionId',None)
         serviceCode  = data.get('serviceCode',None)
         
-        print(f'{phoneNumber} {sessionId} {text} {serviceCode}')
+        # print(f'{phoneNumber} {sessionId} {text} {serviceCode}')
 
         sender =  self.__class__
 
@@ -181,8 +178,8 @@ class KaziCallBackView(generics.CreateAPIView):
         # serviceCode  = data.get('linkId',None)
         action = Offline(mobile_number=phoneNumber,text=text)
         resp =action.actionCenter()
-        print(resp)
         mobile = str(phoneNumber)
-        sms = SMS(recipients=[mobile],message=resp)
-        sms.send()
+        if resp:
+            sms = SMS(recipients=[mobile],message=resp)
+            sms.send()
         return HttpResponse({'ok':'success'}, status=status.HTTP_200_OK)

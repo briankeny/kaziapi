@@ -26,7 +26,7 @@ class JobRecommendation:
             cols = []
             
             for interaction in interactions:
-                data.append(1)  # Indicates interaction (e.g., viewed, liked, etc.)
+                data.append(1)  # Indicates interaction (e.g., viewed)
                 rows.append(user_index[interaction.user_id])
                 cols.append(job_index[interaction.jobpost_id])
             

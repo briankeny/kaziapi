@@ -12,9 +12,9 @@ def  update_Chat(sender, instance, created, **kwargs):
         content=''
 
         if instance.media:
-            formated = instance.media.split('messages_media/')[1]
-            content+= formated + ':'+ ' '
-
+            formated = instance.media.name.split('messages_media/')[1]
+            content += formated + ': '
+            
         if instance.content:
             content += instance.content
         

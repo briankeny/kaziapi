@@ -80,6 +80,7 @@ class JobApplication(models.Model):
     jobpost = models.ForeignKey(JobPost, on_delete=models.CASCADE, related_name='job_application')
     applicant = models.ForeignKey(User, on_delete=models.CASCADE, related_name='job_applicant')
     score  = models.PositiveIntegerField(default=0,null=False)
+    comments = models.TextField(default='',null=True)
     status = models.CharField(max_length=20, default='applied')
     approval_date = models.CharField( default=timezone.now())
     application_date = models.DateTimeField(auto_now_add=True)

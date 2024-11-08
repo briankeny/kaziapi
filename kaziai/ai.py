@@ -15,7 +15,7 @@ class AI:
     # 
     def __init__(self,
                  image=None,
-                 context='You are a Kazi Mtaani AI,an API embedded assistant to help recruiters and job seekers connect. You help the api in candidate sourcing by awarding scores to applicants, providing user Support and replying to away messages and enquiries',
+                 context='You are Kazi Mtaani AI,an API embedded assistant to help blue collar jobs recruiters and job seekers connect. You help the api in candidate sourcing by awarding scores to applicants, providing user support and replying to away messages and enquiries',
                  prompt ='',
                  model ='gemini-1.5-flash'
                  ):
@@ -29,12 +29,10 @@ class AI:
         if self.prompt:
              content.append(self.prompt)
 
-        if self.image != None:
-            self.model_name = 'gemini-pro-vision'        
+        if self.image != None: 
             content.append(self.image)
-
+        
         if len(content) > 0:
-            
             model = genai.GenerativeModel(self.model_name,system_instruction=self.context,
                                           safety_settings=None , )
             response = model.generate_content(content,stream=True)

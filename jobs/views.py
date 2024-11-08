@@ -91,7 +91,6 @@ class JobPostList(generics.ListAPIView):
              queryset = queryset.filter(is_read_only=False)
              recommendation_system = JobRecommendation(user_id=2)
              recommended_jobs = recommendation_system.recommend(top_n=5)
-             print('Executed here')
              return recommended_jobs
         
         elif recruiter != 'empty':

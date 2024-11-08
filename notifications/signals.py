@@ -1,6 +1,6 @@
 from django.db.models.signals import post_save
 from django.db.models.signals import pre_save
-from users.models import User
+from users.models import User,ProfileVisit
 from .models import Notification
 from jobs.models import JobPost,JobApplication,Review
 from django.dispatch import receiver
@@ -20,7 +20,6 @@ def save_Notification(subject="",message="",category="",receiver=None,action=Non
                 )
             notification.save()
     except Exception as e :
-            print(f'Saving not error {e}')
             pass  
 
 
@@ -29,7 +28,6 @@ def send_notification_email(subject="",message="",recipients=[]):
         sender = settings.EMAIL_HOST_USER
         send_mail(subject,message,sender,recipients)
     except Exception as e:
-         print(f'Found Email error {e}')
          pass
 
 
@@ -108,6 +106,22 @@ def send_Review_notification(sender,instance,created,**kwargs):
             message = f"{instance.review_text[:200]}" 
             subject = f"{instance.reveiwer.full_name} reviewed - {instance.jobpost.title}"
             recipient = instance.jobpost.recruiter
+    
+            save_Notification(subject,message,notification_category,recipient,action)
+        except Exception as e:
+            pass
+
+
+# Job Review Notification
+@receiver(post_save, sender=ProfileVisit)
+def send_Profile_notification(sender,instance,created,**kwargs): 
+    if created:
+        try:
+            notification_category = "user"
+            action= f'{instance.visitor.user_id}'
+            message = f"You have an admirer {instance.visitor.full_name} visited your profile" 
+            subject = f"{instance.visitor.full_name}"
+            recipient = instance.user
     
             save_Notification(subject,message,notification_category,recipient,action)
         except Exception as e:

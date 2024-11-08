@@ -29,15 +29,14 @@ class PromptGemini(generics.CreateAPIView):
             if prompt == None and image_file == None:
                 return Response({'message':'Prompt or Image is missing'},status=status.HTTP_400_BAD_REQUEST)
             if image_file != None:
-                image_file = Image.open(self.image_file)
-
+                image_file = Image.open(image_file)
+            
             kazi_ai = AI(image=image_file,prompt=prompt)
             response = kazi_ai.generateAIresponse()
 
-            return Response({  'sender':'kazimtaaniai','content':response}, status=status.HTTP_200_OK, content_type='application/json')
+            return Response({'content':response}, status=status.HTTP_200_OK, content_type='application/json')
 
         except Exception as e:
             print(str(e))
-            return Response({'message':'Service is currently unavailable'}, status=status.HTTP_500_INTERNAL_SERVER_ERROR, content_type='application/json')
-
-
+            return Response({'content':'Could not process your request or Service is currently unavailable'}, status=status.HTTP_500_INTERNAL_SERVER_ERROR, content_type='application/json')
+        
