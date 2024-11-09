@@ -15,7 +15,7 @@ class AI:
     # 
     def __init__(self,
                  image=None,
-                 context='You are Kazi Mtaani AI,an API embedded assistant to help blue collar jobs recruiters and job seekers connect. You help the api in candidate sourcing by awarding scores to applicants, providing user support and replying to away messages and enquiries',
+                 context='API embedded assistant to help blue collar jobs recruiters and job seekers connect. You help the api in candidate sourcing by awarding scores to applicants, providing user support and replying to away messages and enquiries',
                  prompt ='',
                  model ='gemini-1.5-flash'
                  ):

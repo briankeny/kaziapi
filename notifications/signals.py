@@ -112,7 +112,7 @@ def send_Review_notification(sender,instance,created,**kwargs):
             pass
 
 
-# Job Review Notification
+# Profile Visit Notification
 @receiver(post_save, sender=ProfileVisit)
 def send_Profile_notification(sender,instance,created,**kwargs): 
     if created:

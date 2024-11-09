@@ -14,6 +14,7 @@ class KaziUSSDMessages:
         Welcome to Kazi Mtaani!
         1. I want to register account
         2. I have an Account
+        3. Access help menu
         """
         return self.message
     
@@ -33,7 +34,6 @@ class KaziUSSDMessages:
         Hi {self.username}! What can we do for you?
         1. Apply for a job
         2. Check application status
-        3. Access help menu
         """
 
         return self.message
@@ -42,10 +42,12 @@ class KaziUSSDMessages:
     def displayHelpMenu(self):
         return f"""END Here are some features available for job seekers:
 
-            * Apply for jobs: #APPLY  <id> ex.23
-            * Track job application status:  #TRACKJOB <id> 
-            * Cancel Job application #CANCEL <id>
- 
+            * To Apply for jobs: #APPLY  <id> ex.23
+            * To Track job application status:  #TRACKJOB <id> 
+            * To Cancel Job application #REJECT <id>
+
+            Send an sms to 30508 with the action you want to take
+  
             Regards,
             @KaziMtaani
         """

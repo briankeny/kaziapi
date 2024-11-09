@@ -2,7 +2,7 @@ from jobs.models import UserJobPostInteraction,JobPost
 from scipy.sparse import csr_matrix
 from sklearn.metrics.pairwise import cosine_similarity
 
-class JobRecommendation:
+class JobRecommendationExtra:
     def __init__(self, user_id):
         self.user_id = user_id
         self.recommended_jobs = []
